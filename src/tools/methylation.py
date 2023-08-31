@@ -82,5 +82,6 @@ class OneDimensionalMethylation(model.LinearModel):
             if i != 0:
                 events.append(Demethylation(i, "r_mu"))
             # add births and deaths
-
+            events.append(InterpolatedBirth(i, M + 1, "b_0", "b_M"))
+            events.append(InterpolatedDeath(i, M + 1, "d_0", "d_M"))
         super().__init__(events)
