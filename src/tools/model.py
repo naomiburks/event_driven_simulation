@@ -28,7 +28,7 @@ class Model:
     Abstract class to hand event-driven time-independent models.
     Parameters not included in instantiation.
     """
-
+    model_name = "Abstract Model"
     def __init__(self, events: list[Event]):
         """"""
         self.events = events
@@ -75,7 +75,7 @@ class Model:
 
         simulation_result = {
             "parameters": parameters,
-            "model": str(type(self)),
+            "model": self.model_name,
             "data": {0: initial_state},
         }
         last_time = 0
