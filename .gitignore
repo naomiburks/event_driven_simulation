@@ -1,0 +1,8 @@
+/.pytest_cache
+/.vscode
+*.egg-info
+*.log
+/__pycache__
+*.xml
+*.json
+*.cpython*
