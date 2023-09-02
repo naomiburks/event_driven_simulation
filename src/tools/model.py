@@ -6,34 +6,71 @@ from copy import deepcopy
 from random import random
 import numpy as np
 from scipy.linalg import expm
+from scipy import optimize
+
+
+class Model:
+    """Abstract class. Contains a state space and function to run for a duration."""
+
+    def run(self, parameters, initial_state, duration: float):
+        """This is the only important function in a model. """
+        # pylint:disable=unused-argument
+        return initial_state
 
 
 class Event:
     """
     Abstract class. 
-    Event consists of:
-     - rate function | (state, parameters) -> nonnegative
-     - implementation function | state -> state
+
+    To instantiate an event, you must override:
+     - rate function | (state, parameters) -> nonnegative number
+     - implement function | state -> state
     """
 
     def get_rate(self, state, model_parameters):
         """Outputs a nonnegative number: the frequency the event occurs"""
 
     def implement(self, state):
-        """Mutates the state with the event implemented"""
+        """Mutates the state with the event implemented and returns the state"""
+        return state
 
 
-class Model:
+class EventModel(Model):
     """
-    Abstract class to hand event-driven time-independent models.
+    Abstract class to handle event-driven time-independent models.
     Parameters not included in instantiation.
+
+    To understand a model you should be comfortable with some concepts: 
+        - A state space. This is the type of data that the model will manipulate.
+        - A set of possible events. These events occur stochastically and modify the state.
+        - Parameters. A single model may behave in different ways under different parameters.
+        This is generally accomplished via having the parameters affect the event rates. 
+
+
+    In order to instantiate a model, you must specify its events. 
+    The state space is implicitly determined. Attempting to run models on states 
+    outside its state space will generally lead to errors. 
+    The parameters must be provided at runtime.
+
+    In order to run a model, you must specify:
+        - parameters
+        - initial state
+        - duration
     """
-    model_name = "Abstract Model"
+
+    name = "Abstract Model"
+
     def __init__(self, events: list[Event]):
         """"""
         self.events = events
 
     def run(self, parameters: dict, initial_state, duration: float, max_num_steps=None):
+        """
+        Runs the model.
+
+        Does not mutate any of the arguments.  
+        """
+
         current_state = deepcopy(initial_state)
         current_time = 0
         num_steps = 0
@@ -69,13 +106,17 @@ class Model:
                                  max_num_steps=None):
         """
         Useful to run simulations. 
-        Data is output all-in-one: the type of model, its parameters, and the timepoint data.
-        You do NOT get the model's namespace variables!
+        Data is output in json-style:
+        {
+            "model": [model name],
+            "parameters": [parameter dictionary],
+            "data" [timepoint data dictionary],
+        }
         """
 
         simulation_result = {
             "parameters": parameters,
-            "model": self.model_name,
+            "model": self.name,
             "data": {0: initial_state},
         }
         last_time = 0
@@ -90,13 +131,15 @@ class Model:
 
 
 class PopulationModel(Model):
-    """In a population model, the state space is a list of population counts."""
+    """In a population model, the state space is a list of population counts
+    for populations of various types."""
 
-    def __init__(self, population_count: int, events: list[Event]):
-        super().__init__(events)
+    def __init__(self, population_count: int):
+        super().__init__()
         self.population_count = population_count
 
     def sample_extinction(self, parameters, duration, num_attempts_per_pop):
+        """Uses Monte Carlo to estimate extinction probabilities."""
         extinction_rates = []
         for population_index in range(self.population_count):
             num_extinctions = 0
@@ -118,10 +161,12 @@ class PopulationModel(Model):
 
 class LinearEvent(Event):
     """
-    These events have rates varying linearly with population size.
+    These events have rates varying linearly with population size as is common in
+    (multitype) branching processes.
     This class is abstract: an instantiation must say what implementing the event
     does to the state.
     """
+
     def __init__(self, population_index: int, rate_parameter_name: str):
         super().__init__()
         self.population_index = population_index
@@ -138,22 +183,32 @@ class LinearEvent(Event):
     def get_rate_per_individual(self, model_parameters):
         """
         By default, the per-individual rate is given as a parameter. 
-        Override this function for other ways to calculate rate.
+        Override this function for other ways to calculate rate. 
+        For example, the per-individual rate could depend on parameters without 
+        being one itself.
         """
         return model_parameters[self.rate_parameter_name]
 
 
 class Birth(LinearEvent):
+    """Most commonly birth event in a branching process."""
+
     def implement(self, state):
         state[self.population_index] = state[self.population_index] + 1
+        return state
 
 
 class Death(LinearEvent):
+    """Most commonly death event in a branching process."""
+
     def implement(self, state):
         state[self.population_index] = state[self.population_index] - 1
+        return state
 
 
 class Transition(LinearEvent):
+    """Most commonly transition event in a multitype branching process."""
+
     def __init__(self, population_index: int, new_population_index: int, rate_parameter_name: str):
         super().__init__(population_index, rate_parameter_name)
         self.new_population_index = new_population_index
@@ -162,23 +217,83 @@ class Transition(LinearEvent):
     def implement(self, state):
         state[self.population_index] = state[self.population_index] - 1
         state[self.new_population_index] = state[self.new_population_index] + 1
+        return state
 
 
-class LinearModel(PopulationModel):
+class LinearModel(EventModel, PopulationModel):
     """
-    A linear model is a population model with no collaboration between individuals. 
-    This means that all events should be linear. 
+    A linear model is a population model with no interaction between individuals. 
+    All event rates depend on a single population and scale linearly with its size.
+
+    PopulationModel is listed after EventModel because super().__init__()
+    desired to be EventModel's __init__.
     """
 
     def __init__(self, events: list[LinearEvent]):
+        super().__init__(events)
         population_count = 1 + \
             max([max(event._necessary_indices) for event in events])
-        super().__init__(population_count, events)
+        self.population_count = population_count
 
     def run_deterministic(self, parameters: dict, initial_state, duration: float):
+        """
+        This calculates the output if the stochastic discrete events were 
+        instead differential equations. For linear models, this is equivalent to 
+        finding the mean behaviour. 
+        """
         generator = self._calculate_generator(parameters)
         end_state = initial_state @ expm(duration * generator)
         return end_state
+
+    def calculate_extinction(self, parameters: dict):
+        """
+        Calculates the extinction probabilities by solving a 
+        first-step conditioning self-similarity equation. 
+        Solves the equation via a fixed point scipy solver after initial burn-in self-composition.
+
+        To optimize runtime, we start by caching the following relevant information for each event: 
+            - the type of individual that induces the event
+            - probability of occurance from the individual
+            - result of the event on the individual
+
+        The recursive extinction function maps guess -> first-step conditioning guess. 
+        The true extinction probability is a fixed point of this function. This fixed point is the
+        guaranteed pointwise limit of iterated self-composition on any nontrivial starting guess.
+        """
+
+        total_rates = [0] * self.population_count
+        for event in self.events:
+            rate = event.get_rate_per_individual(parameters)
+            population = event.population_index
+            total_rates[population] = total_rates[population] + rate
+        probabilities = []
+        impacts = []
+        populations = []
+        for event in self.events:
+            population = event.population_index
+            impact = event.implement(self._standard_basis_vector(
+                population, self.population_count))
+            impacts.append(impact)
+            probabilities.append(event.get_rate_per_individual(
+                parameters) / total_rates[population])
+            populations.append(population)
+
+        def recursive_extinction_function(initial_guess):
+            # record contribution of each event by rates
+            new_guess = [0] * self.population_count
+            for probability, impact, population in zip(probabilities, impacts, populations):
+                contribution = probability
+                for population_count, population_guess in zip(impact, initial_guess):
+                    contribution *= population_guess ** population_count
+                new_guess[population] = new_guess[population] + contribution
+            return np.array(new_guess)
+
+        initial_guess = np.array([0.5] * self.population_count)
+
+        for _ in range(10):
+            initial_guess = recursive_extinction_function(initial_guess)
+
+        return optimize.fixed_point(recursive_extinction_function, initial_guess)
 
     def _calculate_generator(self, parameters: dict):
         generator = np.zeros(
