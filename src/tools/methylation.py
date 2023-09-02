@@ -73,13 +73,20 @@ class InterpolatedDeath(InterpolatedLinearEvent, model.Death):
     """
 
 
-class OneDimensionalMethylation(model.LinearModel):
+class OneDimensionalNonCollaborativeMethylation(model.LinearModel):
+    """
+    Defines a model with the following properties:
+        - M + 1 types: type for each of 0 sites methylated through M sites methylated
+        - Methylation (x -> x+1) and Demthyation (x -> x-1) events are noncollaborative. 
+            - Rates proportional to the number of unmethylated (or methylated) sites.
+        - Birth and death rates follow vary linearly with methylation level. 
+    """
     def __init__(self, M: int):
         events = []
         for i in range(M + 1):
-            if i != M:
+            if i != M: # add methylations
                 events.append(Methylation(i, M, "r_um"))
-            if i != 0:
+            if i != 0: # add demethylations
                 events.append(Demethylation(i, "r_mu"))
             # add births and deaths
             events.append(InterpolatedBirth(i, M + 1, "b_0", "b_M"))
