@@ -2,6 +2,7 @@
 Models are implemented in a parameter-agnostic way. 
 Parameters instead are supplied at the time of running.
 """
+# pylint:disable=arguments-differ
 from copy import deepcopy
 from random import random
 import numpy as np
@@ -11,12 +12,38 @@ from scipy import optimize
 
 class Model:
     """Abstract class. Contains a state space and function to run for a duration."""
-
-    def run(self, parameters, initial_state, duration: float):
+    name = "Abstract Model"
+    def run(self, parameters, initial_state, duration: float, **kwargs):
         """This is the only important function in a model. """
         # pylint:disable=unused-argument
         return initial_state
 
+    def generate_simulation_data(self, parameters: dict, initial_state, timesteps: list,
+                                 **kwargs):
+        """
+        Useful to run simulations. 
+        Data is output in json-style:
+        {
+            "model": [model name],
+            "parameters": [parameter dictionary],
+            "data" [timepoint data dictionary],
+        }
+        """
+
+        simulation_result = {
+            "parameters": parameters,
+            "model": self.name,
+            "data": {0: initial_state},
+        }
+        last_time = 0
+        current_state = initial_state
+        for time in timesteps:
+            duration = time - last_time
+            current_state = self.run(
+                parameters, current_state, duration, **kwargs)
+            simulation_result["data"][time] = current_state
+            last_time = time
+        return simulation_result
 
 class Event:
     """
@@ -33,7 +60,6 @@ class Event:
     def implement(self, state):
         """Mutates the state with the event implemented and returns the state"""
         return state
-
 
 class EventModel(Model):
     """
@@ -102,34 +128,6 @@ class EventModel(Model):
             event.implement(current_state)
         return current_state
 
-    def generate_simulation_data(self, parameters: dict, initial_state, timesteps: list,
-                                 max_num_steps=None):
-        """
-        Useful to run simulations. 
-        Data is output in json-style:
-        {
-            "model": [model name],
-            "parameters": [parameter dictionary],
-            "data" [timepoint data dictionary],
-        }
-        """
-
-        simulation_result = {
-            "parameters": parameters,
-            "model": self.name,
-            "data": {0: initial_state},
-        }
-        last_time = 0
-        current_state = initial_state
-        for time in timesteps:
-            duration = time - last_time
-            current_state = self.run(
-                parameters, current_state, duration, max_num_steps=max_num_steps)
-            simulation_result["data"][time] = current_state
-            last_time = time
-        return simulation_result
-
-
 class PopulationModel(Model):
     """In a population model, the state space is a list of population counts
     for populations of various types."""
@@ -158,6 +156,21 @@ class PopulationModel(Model):
         vector[index] = 1
         return vector
 
+class ExponentialPopulationModel(PopulationModel):
+    """
+    This model is used to run deterministic model where populations grow in accordance
+    with the exponential of a generator matrix.
+    """
+    def __init__(self, population_count, generator_function):
+        super().__init__(population_count)
+        self.generator_function = generator_function
+
+    def run(self, parameters, initial_state, duration):
+        transition_matrix = self._get_transition_matrix(parameters)
+        return initial_state @ expm(duration * transition_matrix)
+
+    def _get_transition_matrix(self, parameters):
+        return self.generator_function(parameters)
 
 class LinearEvent(Event):
     """
@@ -244,6 +257,10 @@ class LinearModel(EventModel, PopulationModel):
         generator = self._calculate_generator(parameters)
         end_state = initial_state @ expm(duration * generator)
         return end_state
+
+    def get_deterministic_model(self):
+        """Returns the deterministic version of the model"""
+        return ExponentialPopulationModel(self.population_count, self._calculate_generator)
 
     def calculate_extinction(self, parameters: dict):
         """
