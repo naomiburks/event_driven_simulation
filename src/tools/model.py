@@ -248,16 +248,6 @@ class LinearModel(EventModel, PopulationModel):
             max([max(event._necessary_indices) for event in events])
         self.population_count = population_count
 
-    def run_deterministic(self, parameters: dict, initial_state, duration: float):
-        """
-        This calculates the output if the stochastic discrete events were 
-        instead differential equations. For linear models, this is equivalent to 
-        finding the mean behaviour. 
-        """
-        generator = self._calculate_generator(parameters)
-        end_state = initial_state @ expm(duration * generator)
-        return end_state
-
     def get_deterministic_model(self):
         """Returns the deterministic version of the model"""
         return ExponentialPopulationModel(self.population_count, self._calculate_generator)

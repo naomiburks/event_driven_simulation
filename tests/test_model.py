@@ -13,7 +13,7 @@ def test_deterministic_run_1():
     e1 = Birth(0, "b")
     e2 = Death(0, "d")
     e3 = Transition(0, 1, "0->1")
-    model = LinearModel([e1, e2, e3])
+    model = LinearModel([e1, e2, e3]).get_deterministic_model()
     p = {
         "b": 1,
         "d": 1,
@@ -21,10 +21,10 @@ def test_deterministic_run_1():
     }
     initial = [1, 0]
     d = 0
-    assert (model.run_deterministic(p, initial, d) == np.array([1, 0])).all()
+    assert (model.run(p, initial, d) == np.array([1, 0])).all()
 
 
-def test_extinction():
+def test_extinction_1():
     b = Birth(0, "b")
     d = Death(0, "d")
     b2 = Birth(1, "b2")
