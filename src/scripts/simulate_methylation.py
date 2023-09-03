@@ -10,8 +10,9 @@ from src.tools import io
 SIMULATION_PATH = "example"
 
 if __name__ == "__main__":
-    site_count = 7
-    model = methylation.OneDimensionalNonCollaborativeMethylation(site_count)
+    SITE_COUNT = 7
+    model = methylation.OneDimensionalNonCollaborativeMethylation(SITE_COUNT)
+    det_model = model.get_deterministic_model()
     parameters = {
         "r_um": 1,
         "r_mu": 1,
@@ -22,8 +23,7 @@ if __name__ == "__main__":
     }
     timesteps = [i / 1000 for i in range(1001)]
     initial_state = [100] * 8
-    #result = model.generate_simulation_data(parameters, initial_state, timesteps)
-    #io.write_simulation(result, SIMULATION_PATH)
-    result = io.read_simulation(SIMULATION_PATH)
+    result = model.generate_simulation_data(parameters, initial_state, timesteps)
+    det_result = det_model.generate_simulation_data(parameters, initial_state, timesteps)
     plot.plot_timepoint_data(result)
-    
+    plot.plot_timepoint_data(det_result)
