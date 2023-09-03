@@ -81,6 +81,7 @@ class OneDimensionalNonCollaborativeMethylation(model.LinearModel):
             - Rates proportional to the number of unmethylated (or methylated) sites.
         - Birth and death rates follow vary linearly with methylation level. 
     """
+    name = "One Dimensional Noncollaborative Methylation"
     def __init__(self, M: int):
         events = []
         for i in range(M + 1):
@@ -92,3 +93,4 @@ class OneDimensionalNonCollaborativeMethylation(model.LinearModel):
             events.append(InterpolatedBirth(i, M + 1, "b_0", "b_M"))
             events.append(InterpolatedDeath(i, M + 1, "d_0", "d_M"))
         super().__init__(events)
+        self.name = f"{self.name} ({self.population_count - 1} sites)"
