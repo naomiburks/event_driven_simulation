@@ -241,7 +241,7 @@ class LinearModel(EventModel, PopulationModel):
     PopulationModel is listed after EventModel because super().__init__()
     desired to be EventModel's __init__.
     """
-
+    name = "Linear Model"
     def __init__(self, events: list[LinearEvent]):
         super().__init__(events)
         population_count = 1 + \
@@ -250,8 +250,10 @@ class LinearModel(EventModel, PopulationModel):
 
     def get_deterministic_model(self):
         """Returns the deterministic version of the model"""
-        return ExponentialPopulationModel(self.population_count, self._calculate_generator)
-
+        model = ExponentialPopulationModel(self.population_count, self._calculate_generator)
+        model.name = f"{self.name} (deterministic)"
+        return model
+    
     def calculate_extinction(self, parameters: dict):
         """
         Calculates the extinction probabilities by solving a 
