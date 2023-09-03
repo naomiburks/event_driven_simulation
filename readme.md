@@ -62,7 +62,7 @@ We use pytest for the testing suite. After running py setup.py develop, run ```p
 
 We use pylint for linting. I'm not sure the best way to use pylint outside an IDE. 
 
-## Misc
+## Miscelaneous
 
 ### What is the point of all those .gitkeep files? 
 
