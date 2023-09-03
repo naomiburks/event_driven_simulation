@@ -34,6 +34,7 @@ If you use a text editor, I highly recommend switching to an IDE, especially VSC
 - run support 
 - version control
 - refactoring
+
 Good IDEs also will not strain your computer's resources significantly more than text editors. There is some cost in getting started with IDEs as it can take a bit of work to configure everything to meet your needs. I've found the quality-of-life improvements well worth it and have made the difference for me in being able to build and maintain scalable projects.  
 
 ## Documentation
