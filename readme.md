@@ -1,6 +1,6 @@
 # Event-Driven Simulation   
 
-This repository contains tools to run and analyze time-indexed stochastic processes. In particular, we build tools for event-driven population models while keeping abstractions separate enough to maximally extend to other uses. 
+This git repository contains tools to run and analyze time-indexed stochastic processes. In particular, we build tools for event-driven population models while keeping abstractions separate enough to maximally extend to other uses. 
 
 ## Getting Started
 
@@ -67,5 +67,3 @@ We use pylint for linting. I'm not sure the best way to use pylint outside an ID
 ### What is the point of all those .gitkeep files? 
 
 Git only tracks files, and directories are implicitly determined from them. This means that if a directory contains no files, git will not know about it. So to have git to know about a folder, we put a dummy file in it.  
-
-### 
