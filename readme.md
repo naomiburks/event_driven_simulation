@@ -28,7 +28,7 @@ The latter method is preferred, since running setup is necessary for tests to wo
 
 -----
 
-If you use a text editor, I highly recommend switching to an IDE, especially VSCode. Some benefits of IDEs not typical in text editors:
+If you use a text editor, I highly recommend switching to an IDE, especially [VSCode](https://code.visualstudio.com/download). Some benefits of IDEs not typical in text editors:
 - test support
 - automatic linting (code styling and other coherence checks)
 - run support 
