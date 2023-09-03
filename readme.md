@@ -24,7 +24,7 @@ and then
 py src/scripts/[script_name]
 ```
 
-Scripts must be run from the root directory. Running from the src/scripts folder **will not work**.
+The latter method is preferred, since running setup is necessary for tests to work properly. Scripts must be run from the root directory. Running from the src/scripts folder **will not work**.
 
 -----
 
