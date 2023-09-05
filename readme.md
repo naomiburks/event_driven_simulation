@@ -6,7 +6,7 @@ This git repository contains tools to run and analyze time-indexed stochastic pr
 
 ### Getting Started
 
-This project is written in python 3 with dependencies managed using pip.
+This project is written in python 3 with dependencies managed using pip (which usually is installed with python3 installations).
 
 In order to install dependencies, run 
 ```
