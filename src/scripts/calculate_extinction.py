@@ -1,12 +1,11 @@
-from src.tools import model
+from src.tools.models.linear import Birth, Death, Transition, LinearModel
 
-
-b1 = model.Birth(0, "b1")
-b2 = model.Birth(1, "b2")
-d1 = model.Death(0, "d1")
-d2 = model.Death(1, "d2")
-t1 = model.Transition(0, 1, "0->1")
-t2 = model.Transition(1, 0, "1->0")
+b1 = Birth(0, "b1")
+b2 = Birth(1, "b2")
+d1 = Death(0, "d1")
+d2 = Death(1, "d2")
+t2 = Transition(1, 0, "1->0")
+t1 = Transition(0, 1, "0->1")
 parameters = {
     "b1": 2,
     "b2": 1,
@@ -16,6 +15,6 @@ parameters = {
     "1->0": 1,
 }
 events = [b1, b2, d1, d2, t1, t2]
-M = model.LinearModel(events)
+M = LinearModel(events)
 probabilities = M.calculate_extinction(parameters)
 print(probabilities)
