@@ -1,176 +1,7 @@
-"""
-Models are implemented in a parameter-agnostic way. 
-Parameters instead are supplied at the time of running.
-"""
-# pylint:disable=arguments-differ
-from copy import deepcopy
-from random import random
+from src.tools.models.event import Event, EventModel
+from src.tools.models.population import PopulationModel, ExponentialPopulationModel
 import numpy as np
-from scipy.linalg import expm
 from scipy import optimize
-
-
-class Model:
-    """Abstract class. Contains a state space and function to run for a duration."""
-    name = "Abstract Model"
-    def run(self, parameters, initial_state, duration: float, **kwargs):
-        """This is the only important function in a model. """
-        # pylint:disable=unused-argument
-        return initial_state
-
-    def generate_simulation_data(self, parameters: dict, initial_state, timesteps: list,
-                                 **kwargs):
-        """
-        Useful to run simulations. 
-        Data is output in json-style:
-        {
-            "model": [model name],
-            "parameters": [parameter dictionary],
-            "data" [timepoint data dictionary],
-        }
-        """
-
-        simulation_result = {
-            "parameters": parameters,
-            "model": self.name,
-            "data": {0: initial_state},
-        }
-        last_time = 0
-        current_state = initial_state
-        for time in timesteps:
-            duration = time - last_time
-            current_state = self.run(
-                parameters, current_state, duration, **kwargs)
-            simulation_result["data"][time] = current_state
-            last_time = time
-        return simulation_result
-
-class Event:
-    """
-    Abstract class. 
-
-    To instantiate an event, you must override:
-     - rate function | (state, parameters) -> nonnegative number
-     - implement function | state -> state
-    """
-
-    def get_rate(self, state, model_parameters):
-        """Outputs a nonnegative number: the frequency the event occurs"""
-
-    def implement(self, state):
-        """Mutates the state with the event implemented and returns the state"""
-        return state
-
-class EventModel(Model):
-    """
-    Abstract class to handle event-driven time-independent models.
-    Parameters not included in instantiation.
-
-    To understand a model you should be comfortable with some concepts: 
-        - A state space. This is the type of data that the model will manipulate.
-        - A set of possible events. These events occur stochastically and modify the state.
-        - Parameters. A single model may behave in different ways under different parameters.
-        This is generally accomplished via having the parameters affect the event rates. 
-
-
-    In order to instantiate a model, you must specify its events. 
-    The state space is implicitly determined. Attempting to run models on states 
-    outside its state space will generally lead to errors. 
-    The parameters must be provided at runtime.
-
-    In order to run a model, you must specify:
-        - parameters
-        - initial state
-        - duration
-    """
-
-    name = "Abstract Model"
-
-    def __init__(self, events: list[Event]):
-        """"""
-        self.events = events
-
-    def run(self, parameters: dict, initial_state, duration: float, max_num_steps=None):
-        """
-        Runs the model.
-
-        Does not mutate any of the arguments.  
-        """
-
-        current_state = deepcopy(initial_state)
-        current_time = 0
-        num_steps = 0
-        while True:
-            num_steps += 1
-            if max_num_steps is not None and num_steps > max_num_steps:
-                raise RuntimeError(
-                    "Maximum number of steps for single simulation exceeded")
-            rates = []
-            for event in self.events:
-                rates.append(event.get_rate(current_state, parameters))
-            total_rate = sum(rates)
-            if total_rate == 0:
-                break
-            else:
-                waiting_time = - np.log(random()) / total_rate
-            current_time += waiting_time
-            if current_time > duration:
-                break
-            event_index = random() * total_rate
-            found_event = None
-            for event, rate in zip(self.events, rates):
-                if rate >= event_index:
-                    found_event = event
-                    break
-                event_index -= rate
-            if found_event is None:
-                raise RuntimeError("Event was not able to be found!")
-            event.implement(current_state)
-        return current_state
-
-class PopulationModel(Model):
-    """In a population model, the state space is a list of population counts
-    for populations of various types."""
-
-    def __init__(self, population_count: int):
-        super().__init__()
-        self.population_count = population_count
-
-    def sample_extinction(self, parameters, duration, num_attempts_per_pop):
-        """Uses Monte Carlo to estimate extinction probabilities."""
-        extinction_rates = []
-        for population_index in range(self.population_count):
-            num_extinctions = 0
-            initial_state = self._standard_basis_vector(
-                population_index, self.population_count)
-            for _ in range(num_attempts_per_pop):
-                final_state = self.run(parameters, initial_state, duration)
-                if sum(final_state) == 0:
-                    num_extinctions += 1
-            extinction_rates.append(num_extinctions / num_attempts_per_pop)
-        return extinction_rates
-
-    @staticmethod
-    def _standard_basis_vector(index, length):
-        vector = [0] * length
-        vector[index] = 1
-        return vector
-
-class ExponentialPopulationModel(PopulationModel):
-    """
-    This model is used to run deterministic model where populations grow in accordance
-    with the exponential of a generator matrix.
-    """
-    def __init__(self, population_count, generator_function):
-        super().__init__(population_count)
-        self.generator_function = generator_function
-
-    def run(self, parameters, initial_state, duration):
-        transition_matrix = self._get_transition_matrix(parameters)
-        return initial_state @ expm(duration * transition_matrix)
-
-    def _get_transition_matrix(self, parameters):
-        return self.generator_function(parameters)
 
 class LinearEvent(Event):
     """
@@ -242,6 +73,7 @@ class LinearModel(EventModel, PopulationModel):
     desired to be EventModel's __init__.
     """
     name = "Linear Model"
+
     def __init__(self, events: list[LinearEvent]):
         super().__init__(events)
         population_count = 1 + \
@@ -250,10 +82,11 @@ class LinearModel(EventModel, PopulationModel):
 
     def get_deterministic_model(self):
         """Returns the deterministic version of the model"""
-        model = ExponentialPopulationModel(self.population_count, self._calculate_generator)
+        model = ExponentialPopulationModel(
+            self.population_count, self._calculate_generator)
         model.name = f"{self.name} (deterministic)"
         return model
-    
+
     def calculate_extinction(self, parameters: dict):
         """
         Calculates the extinction probabilities by solving a 

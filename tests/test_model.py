@@ -6,7 +6,7 @@ Tests the model functions to check that they are working properly
 
 import numpy as np
 
-from src.tools.model import Birth, Death, LinearModel, Transition
+from src.tools.models.linear import Birth, Death, LinearModel, Transition
 
 
 def test_deterministic_run_1():

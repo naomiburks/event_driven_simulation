@@ -1,4 +1,4 @@
-from src.tools import methylation
+from src.tools.models import methylation
 
 def test_interpolated_linear_event_1():
     event = methylation.InterpolatedLinearEvent(1, 3, "r_min", "r_max")

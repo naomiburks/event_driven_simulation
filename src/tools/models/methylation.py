@@ -6,11 +6,13 @@ In particular, we instantiate:
     to simulate a fitness landscape.
 """
 
-from src.tools import model
+from src.tools.models.linear import Transition, LinearEvent, Birth, Death, LinearModel
+from src.tools.models.model import Model
 
 
-class Methylation(model.Transition):
+class Methylation(Transition):
     """Describes a methylation event"""
+
     def __init__(self, site_index, site_count, rate_parameter_name):
         super().__init__(site_index, site_index + 1, rate_parameter_name)
         self.site_count = site_count
@@ -24,8 +26,9 @@ class Methylation(model.Transition):
         return (self.site_count - self.population_index) * rate_parameter
 
 
-class Demethylation(model.Transition):
+class Demethylation(Transition):
     """Describes a demethylation event"""
+
     def __init__(self, site_index, rate_parameter_name):
         super().__init__(site_index, site_index - 1, rate_parameter_name)
 
@@ -38,13 +41,13 @@ class Demethylation(model.Transition):
         return self.population_index * rate_parameter
 
 
-class InterpolatedLinearEvent(model.LinearEvent):
+class InterpolatedLinearEvent(LinearEvent):
     """
     The rate of an interpolated linear event is calculated 
     linearly between the rate for pop 0 and pop max.
     """
 
-    def __init__(self, population_index, population_count, \
+    def __init__(self, population_index, population_count,
                  rate_min_parameter_name, rate_max_parameter_name):
         super().__init__(population_index, None)
         self.population_count = population_count
@@ -61,19 +64,19 @@ class InterpolatedLinearEvent(model.LinearEvent):
         return rate
 
 
-class InterpolatedBirth(InterpolatedLinearEvent, model.Birth):
+class InterpolatedBirth(InterpolatedLinearEvent, Birth):
     """
     Interpolated birth is both a Birth and an InterpolatedLinearEvent
     """
 
 
-class InterpolatedDeath(InterpolatedLinearEvent, model.Death):
+class InterpolatedDeath(InterpolatedLinearEvent, Death):
     """
     Interpolated death is both a Death and an InterpolatedLinearEvent
     """
 
 
-class OneDimensionalNonCollaborativeMethylation(model.LinearModel):
+class OneDimensionalNonCollaborativeMethylation(LinearModel):
     """
     Defines a model with the following properties:
         - M + 1 types: type for each of 0 sites methylated through M sites methylated
@@ -82,15 +85,26 @@ class OneDimensionalNonCollaborativeMethylation(model.LinearModel):
         - Birth and death rates follow vary linearly with methylation level. 
     """
     name = "One Dimensional Noncollaborative Methylation"
+
     def __init__(self, M: int):
         events = []
         for i in range(M + 1):
-            if i != M: # add methylations
+            if i != M:  # add methylations
                 events.append(Methylation(i, M, "r_um"))
-            if i != 0: # add demethylations
+            if i != 0:  # add demethylations
                 events.append(Demethylation(i, "r_mu"))
             # add births and deaths
             events.append(InterpolatedBirth(i, M + 1, "b_0", "b_M"))
             events.append(InterpolatedDeath(i, M + 1, "d_0", "d_M"))
         super().__init__(events)
         self.name = f"{self.name} ({self.population_count - 1} sites)"
+
+
+
+
+
+class OneDimensionalNonCollaborativeInfiniteSites(Model):
+    def __init__(self, drift, birthrate, deathrate):
+        self.drift = drift
+        self.birthrate = birthrate
+        self.deathrate = deathrate
