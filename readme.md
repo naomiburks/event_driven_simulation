@@ -78,12 +78,12 @@ The basic object in this library is a model. A model represents a stochastic pro
 
 - A PopulationModel is one whose state space is a list of nonnegative integers.  
 - An EventModel is one who which can be run via stochastic events (with time-independent rates) using the Gillespie algorithm. 
-- A LinearModel is both a PopulationModel, an EventModel, and all its events are linear: each event's rate is proportional to the size of one of the populations. LinearModels are used to describe continuous-time multitiype branching processes.
-- An ExponentialPopulationModel one whose run function is deterministic with the reuslt determined via exponentiating an instantaneous generator matrix. It can be used to describe the mean behaviour of many LinearModels.
-- methylation.py contains classes specific to modeling methylation. These are all LinearModels.
+- A HomogeneousModel is both a PopulationModel, an EventModel, and each event's rate is proportional to the size of one of the populations. HomogeneousModels are used to describe continuous-time multitiype branching processes with no interaction between individuals.
+- An ExponentialPopulationModel one whose run function is deterministic with the reuslt determined via exponentiating an instantaneous generator matrix. It can be used to describe the mean behaviour of many HomogeneousModels.
+- methylation.py contains classes specific to modeling methylation. These are all HomogeneousModels.
 
 
-Model classes contain tools to analyze them accessible to all their subclasses. PopulationModels can do a monte carlo simulations of extinction probabilities. LinearModels can directly calculate the extinction probability for an individual of each type directly. LinearModels also provide a converter function that returns the ExponentialPopulationModel that is the mean behaviour of the LinearModel.
+Model classes contain tools to analyze them accessible to all their subclasses. PopulationModels can do a monte carlo simulations of extinction probabilities. HomogeneousModels can directly calculate the extinction probability for an individual of each type directly. HomogeneousModels also provide a converter function that returns the ExponentialPopulationModel that is the mean behaviour of the HomogeneousModel.
 
 ### Events
 

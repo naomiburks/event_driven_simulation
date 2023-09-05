@@ -1,4 +1,4 @@
-from src.tools.models.linear import Birth, Death, Transition, LinearModel
+from src.tools.models.homogeneous import Birth, Death, Transition, HomogeneousModel
 
 b1 = Birth(0, "b1")
 b2 = Birth(1, "b2")
@@ -15,6 +15,6 @@ parameters = {
     "1->0": 1,
 }
 events = [b1, b2, d1, d2, t1, t2]
-M = LinearModel(events)
+M = HomogeneousModel(events)
 probabilities = M.calculate_extinction(parameters)
 print(probabilities)

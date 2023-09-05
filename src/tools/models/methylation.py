@@ -6,7 +6,7 @@ In particular, we instantiate:
     to simulate a fitness landscape.
 """
 
-from src.tools.models.linear import Transition, LinearEvent, Birth, Death, LinearModel
+from src.tools.models.homogeneous import Transition, HomogeneousEvent, Birth, Death, HomogeneousModel
 from src.tools.models.model import Model
 
 
@@ -41,7 +41,7 @@ class Demethylation(Transition):
         return self.population_index * rate_parameter
 
 
-class InterpolatedLinearEvent(LinearEvent):
+class InterpolatedLinearEvent(HomogeneousEvent):
     """
     The rate of an interpolated linear event is calculated 
     linearly between the rate for pop 0 and pop max.
@@ -76,7 +76,7 @@ class InterpolatedDeath(InterpolatedLinearEvent, Death):
     """
 
 
-class OneDimensionalNonCollaborativeMethylation(LinearModel):
+class OneDimensionalNonCollaborativeMethylation(HomogeneousModel):
     """
     Defines a model with the following properties:
         - M + 1 types: type for each of 0 sites methylated through M sites methylated

@@ -3,7 +3,7 @@ from src.tools.models.population import PopulationModel, ExponentialPopulationMo
 import numpy as np
 from scipy import optimize
 
-class LinearEvent(Event):
+class HomogeneousEvent(Event):
     """
     These events have rates varying linearly with population size as is common in
     (multitype) branching processes.
@@ -34,7 +34,7 @@ class LinearEvent(Event):
         return model_parameters[self.rate_parameter_name]
 
 
-class Birth(LinearEvent):
+class Birth(HomogeneousEvent):
     """Most commonly birth event in a branching process."""
 
     def implement(self, state):
@@ -42,7 +42,7 @@ class Birth(LinearEvent):
         return state
 
 
-class Death(LinearEvent):
+class Death(HomogeneousEvent):
     """Most commonly death event in a branching process."""
 
     def implement(self, state):
@@ -50,7 +50,7 @@ class Death(LinearEvent):
         return state
 
 
-class Transition(LinearEvent):
+class Transition(HomogeneousEvent):
     """Most commonly transition event in a multitype branching process."""
 
     def __init__(self, population_index: int, new_population_index: int, rate_parameter_name: str):
@@ -64,7 +64,7 @@ class Transition(LinearEvent):
         return state
 
 
-class LinearModel(EventModel, PopulationModel):
+class HomogeneousModel(EventModel, PopulationModel):
     """
     A linear model is a population model with no interaction between individuals. 
     All event rates depend on a single population and scale linearly with its size.
@@ -74,7 +74,7 @@ class LinearModel(EventModel, PopulationModel):
     """
     name = "Linear Model"
 
-    def __init__(self, events: list[LinearEvent]):
+    def __init__(self, events: list[HomogeneousEvent]):
         super().__init__(events)
         population_count = 1 + \
             max([max(event._necessary_indices) for event in events])
