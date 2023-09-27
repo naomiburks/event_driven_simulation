@@ -52,7 +52,15 @@ class ExponentialPopulationModel(PopulationModel):
 
 class ContinuumPopulationModel(Model):
     """The state space of a continuum population model is a list of
-    individuals, where each individual has a type.
+    individuals, where each individual has a type between 0 and 1.
+
+    Individuals have a deterministic drift, as well as stochastic birth and death rates. 
+    All are paremeter-dependent functions (type, params) -> num.
     """
+
     def __init__(self, drift, birthrate, deathrate):
-        pass
+        super().__init__()
+        self.drift = drift
+        self.birthrate = birthrate
+        self.deathrate = deathrate
+

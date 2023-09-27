@@ -15,10 +15,10 @@ if __name__ == "__main__":
     parameters = {
         "r_um": 1,
         "r_mu": 1,
-        "b_0": 0,
-        "b_M": 0,
-        "d_0": 0,
-        "d_M": 0,
+        "b_0": 0.2,
+        "b_M": 0.3,
+        "d_0": 0.3,
+        "d_M": 0.2,
     }
     timesteps = [i / 1000 for i in range(1001)]
     initial_state = [100] * 8
@@ -26,5 +26,7 @@ if __name__ == "__main__":
         parameters, initial_state, timesteps)
     det_result = det_model.generate_simulation_data(
         parameters, initial_state, timesteps)
-    plot.plot_timepoint_data(result)
-    plot.plot_timepoint_data(det_result)
+    #fig = plot.plot_timepoint_data(result)
+    #plot.show()
+    fig = plot.plot_timepoint_data(det_result)
+    plot.show()

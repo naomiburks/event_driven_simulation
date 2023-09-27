@@ -132,10 +132,9 @@ class HomogeneousModel(EventModel, PopulationModel):
 
         initial_guess = np.array([0.5] * self.population_count)
 
-        for _ in range(10):
-            initial_guess = recursive_extinction_function(initial_guess)
-
-        return optimize.fixed_point(recursive_extinction_function, initial_guess)
+        
+        return optimize.fixed_point(recursive_extinction_function, initial_guess, 
+                                    maxiter=50000, method="iteration")
 
     def _calculate_generator(self, parameters: dict):
         generator = np.zeros(

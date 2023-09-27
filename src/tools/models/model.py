@@ -22,7 +22,7 @@ class Model:
         {
             "model": [model name],
             "parameters": [parameter dictionary],
-            "data" [timepoint data dictionary],
+            "data": [timepoint data dictionary],
         }
         """
 

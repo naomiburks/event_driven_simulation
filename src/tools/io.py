@@ -25,16 +25,23 @@ def write_simulation(data, filename):
     file_path = f"{BASE_PATH}/{SIMULATION_PATH}/{filename}.json"
     return _write_json(data, file_path)
 
-
 def get_simulations():
     dir_path = f"{BASE_PATH}/{SIMULATION_PATH}/"
     return list(filter(_is_tracked, listdir(dir_path)))
 
+# save figure
+
+def save_figure(fig, filename):
+    fig.savefig(f"{BASE_PATH}/{PLOT_PATH}/{filename}.svg")
+
+
+
+
+
+
+
+
 # Read and write JSONs and CSVs
-
-
-
-
 
 def _read_json(file_path):
     with open(file_path, encoding="utf8") as json_file:
