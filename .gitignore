@@ -7,3 +7,4 @@
 *.json
 *.cpython*
 *whiteboard.py
+*.svg
