@@ -44,7 +44,6 @@ LIVING_DEATHRATE_PARAMS = {
     'd_M': 1, 
     'r_um': 0.2,
     'r_mu': 0.1, 
-    'M': 10,
     'p': 1,
   }
 
@@ -56,7 +55,6 @@ LIVING_BIRTHRATE_PARAMS = {
     'd_M': 2, 
     'r_um': 0.2,
     'r_mu': 0.1, 
-    'M': 10,
     'p': 1,
   }
 
@@ -98,3 +96,5 @@ def HALF_METHYLATED_INITIAL(M: int, cell_count = 100):
 def ALL_EQUAL(M: int, cell_count = 100):
     n = [cell_count] * (M + 1)
     return n
+
+CONVERGENCE_TOLERANCE = 0.0000000000001
