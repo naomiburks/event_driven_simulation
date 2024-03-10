@@ -15,10 +15,7 @@ def read_simulation(filename):
     contents = _read_json(file_path)
     # json converts all keys to strings, but we want some to be floats
     # so we have to convert them back.
-    fixed_data = {}
-    for key, value in contents["data"].items():
-        fixed_data[float(key)] = value
-    contents["data"] = fixed_data
+    contents = _convert_json_keys(contents)
     return contents
 
 def write_simulation(data, filename):
@@ -27,7 +24,7 @@ def write_simulation(data, filename):
 
 def get_simulations():
     dir_path = f"{BASE_PATH}/{SIMULATION_PATH}/"
-    return list(filter(_is_tracked, listdir(dir_path)))
+    return _get_tracked_files(dir_path)
 
 # save figure
 
@@ -67,6 +64,27 @@ def _write_csv(file_path, data):
                                quotechar='"', quoting=csv.QUOTE_MINIMAL)
         csvwriter.writerows(data)
 
+def _get_tracked_files(dir_path):
+    return list(filter(_is_tracked, listdir(dir_path)))
 
 def _is_tracked(file_name):
     return not file_name[0] == IGNORED_PREFIX
+
+def _convert_json_keys(json):
+    """Returns a json with string keys converted to floats"""
+    if isinstance(json, list):
+        return [_convert_json_keys(item) for item in json]
+    if isinstance(json, dict):
+        converted_dict = {}
+        for key, val in json.items():
+            try:
+                key = int(key)
+            except ValueError:
+                try: 
+                    key = float(key)
+                except ValueError:
+                    pass
+            
+            converted_dict[key] = _convert_json_keys(val)
+        return converted_dict
+    return json
