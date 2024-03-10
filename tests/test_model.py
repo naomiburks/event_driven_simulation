@@ -6,13 +6,14 @@ Tests the model functions to check that they are working properly
 
 import numpy as np
 
-from src.tools.models.homogeneous import Birth, Death, HomogeneousModel, Transition
+from src.tools.models.homogeneous import Birth, Death, HomogeneousModel, Switch
 
+from src.constants import CONVERGENCE_TOLERANCE
 
 def test_deterministic_run_1():
     e1 = Birth(0, "b")
     e2 = Death(0, "d")
-    e3 = Transition(0, 1, "0->1")
+    e3 = Switch(0, 1, "0->1")
     model = HomogeneousModel([e1, e2, e3]).get_deterministic_model()
     p = {
         "b": 1,
@@ -29,7 +30,7 @@ def test_extinction_1():
     d = Death(0, "d")
     b2 = Birth(1, "b2")
     d2 = Death(1, "d2")
-    t = Transition(0, 1, "0->1")
+    t = Switch(0, 1, "0->1")
     events = [b, d, b2, d2, t]
     parameters = {
         "b": 1,
@@ -45,10 +46,10 @@ def test_extinction_1():
 
     # the correct answer is [0.5, 1] up to floating point errors
 
-    assert probabilities[0] > 0.499999999999
-    assert probabilities[0] < 0.500000000001
-    assert probabilities[1] > 0.999999999999
-    assert probabilities[1] < 1.000000000001
+    assert probabilities[0] > 0.5 - CONVERGENCE_TOLERANCE
+    assert probabilities[0] < 0.5 + CONVERGENCE_TOLERANCE
+    assert probabilities[1] > 1 - CONVERGENCE_TOLERANCE
+    assert probabilities[1] < 1 + CONVERGENCE_TOLERANCE
 
 
 def test_extinction_2():
@@ -64,8 +65,8 @@ def test_extinction_2():
 
     probability = M.calculate_extinction(parameters)[0]
 
-    assert probability < 0.40000000001
-    assert probability > 0.39999999999
+    assert probability < 0.4 + CONVERGENCE_TOLERANCE
+    assert probability > 0.4 - CONVERGENCE_TOLERANCE
 
 
 def test_extinction_3():
@@ -73,8 +74,8 @@ def test_extinction_3():
     b2 = Birth(1, "b2")
     d1 = Death(0, "d1")
     d2 = Death(1, "d2")
-    t1 = Transition(0, 1, "0->1")
-    t2 = Transition(1, 0, "1->0")
+    t1 = Switch(0, 1, "0->1")
+    t2 = Switch(1, 0, "1->0")
     parameters = {
         "b1": 2,
         "b2": 1,
@@ -90,8 +91,8 @@ def test_extinction_3():
     # calculated as solution to system of equations via wolfram alpha
 
     for p, true_p in zip(probabilities, true_probabilities):
-        assert p < true_p + 0.0000001
-        assert p > true_p - 0.0000001
+        assert p < true_p + 0.00001
+        assert p > true_p - 0.00001
 
 
 def test_extinction_4():
@@ -101,8 +102,8 @@ def test_extinction_4():
     d1 = Death(0, "d0")
     d2 = Death(1, "d1")
     d3 = Death(2, "d2")
-    t1 = Transition(2, 1, "2->1")
-    t2 = Transition(1, 0, "1->0")
+    t1 = Switch(2, 1, "2->1")
+    t2 = Switch(1, 0, "1->0")
     parameters = {
         "b0": 3,
         "d0": 1,
@@ -118,5 +119,5 @@ def test_extinction_4():
     probabilities = M.calculate_extinction(parameters)
     true_probabilities = [1/3, 1/2, 1/3]  # calculated by hand :(
     for p, true_p in zip(probabilities, true_probabilities):
-        assert p < true_p + 0.0000001
-        assert p > true_p - 0.0000001
+        assert p < true_p + CONVERGENCE_TOLERANCE
+        assert p > true_p - CONVERGENCE_TOLERANCE

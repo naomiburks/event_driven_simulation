@@ -1,9 +1,10 @@
-from src.tools.models.event import Event, EventModel
+from src.tools.models.event import TimeIndependentEvent, Event, EventModel
 from src.tools.models.population import PopulationModel, ExponentialPopulationModel
 import numpy as np
 from scipy import optimize
+from src.constants import CONVERGENCE_TOLERANCE
 
-class HomogeneousEvent(Event):
+class HomogeneousEvent(TimeIndependentEvent):
     """
     These events have rates varying linearly with population size as is common in
     (multitype) branching processes.
@@ -17,7 +18,7 @@ class HomogeneousEvent(Event):
         self.rate_parameter_name = rate_parameter_name
         self._necessary_indices = [population_index]
 
-    def get_rate(self, state, model_parameters):
+    def get_max_rate(self, state, model_parameters):
         """
         This calculates the frequency the event occurs given a state and parameters
         """
@@ -50,7 +51,7 @@ class Death(HomogeneousEvent):
         return state
 
 
-class Transition(HomogeneousEvent):
+class Switch(HomogeneousEvent):
     """Most commonly transition event in a multitype branching process."""
 
     def __init__(self, population_index: int, new_population_index: int, rate_parameter_name: str):
@@ -80,7 +81,7 @@ class HomogeneousModel(EventModel, PopulationModel):
             max([max(event._necessary_indices) for event in events])
         self.population_count = population_count
 
-    def get_deterministic_model(self):
+    def get_deterministic_model(self) -> ExponentialPopulationModel:
         """Returns the deterministic version of the model"""
         model = ExponentialPopulationModel(
             self.population_count, self._calculate_generator)
@@ -134,7 +135,7 @@ class HomogeneousModel(EventModel, PopulationModel):
 
         
         return optimize.fixed_point(recursive_extinction_function, initial_guess, 
-                                    maxiter=50000, method="iteration")
+                                    maxiter=50000, method="iteration", xtol = CONVERGENCE_TOLERANCE)
 
     def _calculate_generator(self, parameters: dict):
         generator = np.zeros(

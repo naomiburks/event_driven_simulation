@@ -1,5 +1,6 @@
 from copy import deepcopy
 from random import random
+from abc import abstractmethod
 
 import numpy as np
 from scipy.linalg import solve
@@ -8,41 +9,45 @@ from src.tools.models.model import Model
 
 class Event:
     """
-    Abstract class. 
+    Abstract class used by EventModels. 
 
     To instantiate an event, you must override:
      - rate function | (state, parameters) -> nonnegative number
      - implement function | state -> state
     """
 
-    def get_rate(self, state, model_parameters):
-        """Outputs a nonnegative number: the frequency the event occurs"""
+    @abstractmethod
+    def get_rate(self, state, time, model_parameters):
+        """Returns a nonnegative number: the frequency the event occurs"""
 
-    def implement(self, state):
-        """Mutates the state with the event implemented and returns the state"""
-        return state
+    @abstractmethod
+    def get_max_rate(self, state, model_parameters):
+        pass
 
+    @abstractmethod
+    def implement(self, state, *kwargs):
+        """Returns the new state after event is implemented.
+        Mutates the state to become the new state."""
 
-class ConstantEvent(Event):
+class TimeIndependentEvent(Event):
+    def get_rate(self, state, time, model_parameters):
+        return self.get_max_rate(state, model_parameters)
+
+class ConstantEvent(TimeIndependentEvent):
+    """Constant events occur only when the model is in a certain state. 
+    They transfor the state into a new state."""
     def __init__(self, initial_state, end_state, rate_parameter_name):
         self.initial_state = initial_state
         self.end_state = end_state
         self.rate_parameter_name = rate_parameter_name
 
-    def get_rate(self, state, model_parameters):
+    def get_max_rate(self, state, model_parameters):
         if state == self.initial_state:
             return model_parameters[self.rate_parameter_name]
         return 0
 
     def implement(self, state):
         return self.end_state
-
-
-class TimeDependentEvent(Event):
-    """
-    Time-dependent events have rates that depend on time rather than on the state. 
-    It is more complicated to sample from them.
-    """
 
 
 class EventModel(Model):
@@ -53,16 +58,17 @@ class EventModel(Model):
     To understand a model you should be comfortable with some concepts: 
         - A state space. This is the type of data that the model will manipulate.
         - A set of possible events. These events occur stochastically and modify the state.
+        Event types can be any subclasses of RateBoundedEvent.
         - Parameters. A single model may behave in different ways under different parameters.
         This is generally accomplished via having the parameters affect the event rates. 
 
 
-    In order to instantiate a model, you must specify its events. 
+    In order to instantiate a model, we must specify its events. 
     The state space is implicitly determined. Attempting to run models on states 
     outside its state space will generally lead to errors. 
     The parameters must be provided at runtime.
 
-    In order to run a model, you must specify:
+    In order to run a model, we must specify:
         - parameters
         - initial state
         - duration
@@ -76,9 +82,7 @@ class EventModel(Model):
 
     def run(self, parameters: dict, initial_state, duration: float, max_num_steps=None):
         """
-        Runs the model.
-
-        Does not mutate any of the arguments.  
+        Returns the result of running the model. Does not mutate any of the arguments.  
         """
 
         current_state = deepcopy(initial_state)
@@ -91,7 +95,7 @@ class EventModel(Model):
                     "Maximum number of steps for single simulation exceeded")
             rates = []
             for event in self.events:
-                rates.append(event.get_rate(current_state, parameters))
+                rates.append(event.get_max_rate(current_state, parameters))
             total_rate = sum(rates)
             if total_rate == 0:
                 break
@@ -105,11 +109,14 @@ class EventModel(Model):
             for event, rate in zip(self.events, rates):
                 if rate >= event_index:
                     found_event = event
+                    found_max_rate = rate
+                    found_rate = event.get_rate(current_state, current_time)
                     break
                 event_index -= rate
             if found_event is None:
                 raise RuntimeError("Event was not able to be found!")
-            event.implement(current_state)
+            if found_rate / found_max_rate > random():
+                found_event.implement(current_state, current_time)
         return current_state
 
 
@@ -125,12 +132,12 @@ class ConstantEventModel(EventModel):
 
     def get_stable_state(self, parameters):
         """
-        Finds the left eigenvector of the transition matrix whose eigenvalue is 0 with appropriate norm.
+        Returns the left eigenvector of the transition matrix whose eigenvalue is 0 with appropriate norm.
         Accomplishes this by solving the equation Ax=b, where b = [1, 0, .., 0] and A is the matrix
-        that takes transpose(transition matrix) and replaces the first row with [1, 0, ..., 0].
+        that takes the transpose of the transition matrix and replaces the first row with [1, 0, ..., 0].
 
-        Will return a Singular Matrix error if there the space of these eigenvectors is 2+ dimensional,
-        which corresponds to having multiple stable states (only possible for reducible markov process). 
+        Will return a Singular Matrix Error if the space of these eigenvectors is 2+ dimensional,
+        which corresponds to having multiple stable states (only possible for reducible markov processes). 
         """
 
         matrix_to_solve = self._get_transition_matrix(parameters).T
@@ -153,7 +160,7 @@ class ConstantEventModel(EventModel):
             initial_index = self._get_list_index(
                 self.state_space, event.initial_state)
             end_index = self._get_list_index(self.state_space, event.end_state)
-            rate = event.get_rate(event.initial_state, parameters)
+            rate = event.get_max_rate(event.initial_state, parameters)
             transition_matrix[initial_index,
                               end_index] = transition_matrix[initial_index, end_index] + rate
             transition_matrix[initial_index,

@@ -1,7 +1,7 @@
-from scipy.linalg import expm
+from scipy.linalg import expm, eig
 
 from src.tools.models.model import Model
-
+import numpy as np
 
 class PopulationModel(Model):
     """In a population model, the state space is a list of population counts
@@ -43,10 +43,24 @@ class ExponentialPopulationModel(PopulationModel):
         self.generator_function = generator_function
 
     def run(self, parameters, initial_state, duration):
-        transition_matrix = self._get_transition_matrix(parameters)
+        transition_matrix = self._get_instantaneous_transition_matrix(parameters)
         return initial_state @ expm(duration * transition_matrix)
 
-    def _get_transition_matrix(self, parameters):
+    def get_long_term_behavior(self, parameters):
+        """Returns (growth rate, stable state)"""
+        transition_matrix = self._get_instantaneous_transition_matrix(parameters)
+        vals, vecs = eig(transition_matrix, left=True, right=False)
+        max_val = None
+        for i, val in enumerate(vals):
+            test_val = np.real(val)
+            if max_val is None or test_val > max_val:
+                max_val = test_val
+                max_index = i
+       
+        vec = vecs[:, max_index]
+        return max_val, list(vec / sum(vec))
+
+    def _get_instantaneous_transition_matrix(self, parameters):
         return self.generator_function(parameters)
 
 

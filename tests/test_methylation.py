@@ -7,7 +7,7 @@ def test_interpolated_linear_event_1():
         "r_max": 1,
     }
     state = [1, 1, 1]
-    rate = event.get_rate(state, parameters)
+    rate = event.get_max_rate(state, parameters)
     assert rate == 0.5
 
 def test_interpolated_linear_event_2():
@@ -17,7 +17,7 @@ def test_interpolated_linear_event_2():
         "r_max": 1,
     }
     state = [1, 1, 1, 0, 0, 0, 0]
-    rate = event.get_rate(state, parameters)
+    rate = event.get_max_rate(state, parameters)
     assert rate == 1/3
 
 def test_interpolated_birth_1():
@@ -27,7 +27,7 @@ def test_interpolated_birth_1():
         "r_max": 1,
     }
     state = [1, 1, 1, 0, 0, 0, 0]
-    rate = event.get_rate(state, parameters)
+    rate = event.get_max_rate(state, parameters)
     assert rate == 1/3
 
 def test_interpolated_birth_2():
@@ -43,7 +43,7 @@ def test_interpolated_death_1():
         "r_max": 1,
     }
     state = [1, 1, 1, 0, 0, 0, 0]
-    rate = event.get_rate(state, parameters)
+    rate = event.get_max_rate(state, parameters)
     assert rate == 1/3
 
 def test_interpolated_death_2():

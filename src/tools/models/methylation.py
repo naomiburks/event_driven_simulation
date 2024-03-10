@@ -15,11 +15,11 @@ from scipy.optimize import root
 from src.tools.models.event import (ConstantEvent, ConstantEventModel, Event,
                                     EventModel)
 from src.tools.models.homogeneous import (Birth, Death, HomogeneousEvent,
-                                          HomogeneousModel, Transition)
+                                          HomogeneousModel, Switch)
 from src.tools.models.model import Model
 
 
-class OneDimensionalMethylation(Transition):
+class OneDimensionalMethylation(Switch):
     """Describes a methylation event"""
 
     def __init__(self, site_index, site_count, rate_parameter_name):
@@ -35,7 +35,7 @@ class OneDimensionalMethylation(Transition):
         return (self.site_count - self.population_index) * rate_parameter
 
 
-class OneDimensionalDemethylation(Transition):
+class OneDimensionalDemethylation(Switch):
     """Describes a demethylation event"""
 
     def __init__(self, site_index, rate_parameter_name):
@@ -93,7 +93,7 @@ class OneDimensionalNonCollaborativeMethylation(HomogeneousModel):
             - Rates proportional to the number of unmethylated (or methylated) sites.
         - Birth and death rates follow vary linearly with methylation level. 
     """
-    name = "One Dimensional Noncollaborative Methylation"
+    name = "One Dimensional Noncollaborative Methylation with Linear Fitness"
 
     def __init__(self, M: int):
         events = []
@@ -125,8 +125,8 @@ class OneDimensionalNonCollaborativeMethylation(HomogeneousModel):
 
 
 class HalfConstantEvent(ConstantEvent):
-    def get_rate(self, state, model_parameters):
-        return super().get_rate(state, model_parameters) / 2
+    def get_max_rate(self, state, model_parameters):
+        return super().get_max_rate(state, model_parameters) / 2
 
 
 class SingleSite(ConstantEventModel):
@@ -145,7 +145,7 @@ class MethylationBirthShift(Event):
     def __init__(self, rate_parameter_name):
         self.rate_parameter_name = rate_parameter_name
 
-    def get_rate(self, state, parameters):
+    def get_max_rate(self, state, parameters):
         return parameters[self.rate_parameter_name]
 
     def implement(self, state):
@@ -164,10 +164,10 @@ class NoncollaborativeSingleCell(EventModel):
 
     def __init__(self):
         events = []
-        events.append(Transition(0, 1, "r_uh"))
-        events.append(Transition(1, 0, "r_hu"))
-        events.append(Transition(1, 2, "r_hm"))
-        events.append(Transition(2, 1, "r_mh"))
+        events.append(Switch(0, 1, "r_uh"))
+        events.append(Switch(1, 0, "r_hu"))
+        events.append(Switch(1, 2, "r_hm"))
+        events.append(Switch(2, 1, "r_mh"))
         events.append(MethylationBirthShift("b"))
         super().__init__(events)
 
