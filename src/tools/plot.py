@@ -109,5 +109,24 @@ def plot_extinction_comparison(results_dict):
     return fig, ax
         
 
+def plot_dictionary_series(series_data, scale="linear"):
+    """
+    Data is input as 
+    {series_name: {timepoint: float}}
+    """
+    fig, ax = plt.subplots(figsize=(13, 8))
+
+    for name, series in series_data.items():
+        xs = list(series.keys())
+        ys = [series[x] for x in xs]
+        if scale == "linear":
+            ax.plot(xs, ys, label=name, linewidth=2)
+        elif scale == "log":
+            ax.semilogy(xs, ys, label=name, linewidth=2)
+    ax.legend()
+    return fig, ax
+
+
+
 def show():
     plt.show()
