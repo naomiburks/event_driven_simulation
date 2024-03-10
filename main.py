@@ -2,17 +2,23 @@ from appJar import gui
 import os
 
 def press(name):
-    with open(f"src/scripts/{name}") as f:
-        exec(f.read())
+    with open(f"src/scripts/{name}") as script:
+        exec(script.read())
 
 
-files = [fname for fname in os.listdir("src/scripts/") if fname[0] != "_"]
+files = [filename for filename in os.listdir("src/scripts/") if filename[0] != "_"]
 
 app = gui()
+app.addOptionBox("Script", files)
 
-app.addLabel("title", "Pick a Script")
-app.setLabelBg("title", "white")
-for fname in files:
-    app.addButton(fname, press)
+def run():
+    filename = app.getOptionBox("Script")
+    press(filename)
+
+app.addButton("run", run)
+#app.addLabel("title", "Pick a Script")
+#app.setLabelBg("title", "white")
+#for filename in files:
+#    app.addButton(filename, press)
 
 app.go()
