@@ -44,7 +44,7 @@ class ExponentialPopulationModel(PopulationModel):
 
     def run(self, parameters, initial_state, duration):
         transition_matrix = self._get_instantaneous_transition_matrix(parameters)
-        return initial_state @ expm(duration * transition_matrix)
+        return list(initial_state @ expm(duration * transition_matrix))
 
     def get_long_term_behavior(self, parameters):
         """Returns (growth rate, stable state)"""
