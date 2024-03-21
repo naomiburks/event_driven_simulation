@@ -38,7 +38,7 @@ class Model:
 
 
         for i in range(sample_count):
-            if i * 100 / sample_count >= percent_completed + 10:
+            if sample_count > 100 and i * 100 / sample_count >= percent_completed + 10:
                 percent_completed += 10
                 print(f"{i}/{sample_count} completed")
 
