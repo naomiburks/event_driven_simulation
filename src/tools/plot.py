@@ -126,7 +126,5 @@ def plot_dictionary_series(series_data, scale="linear"):
     ax.legend()
     return fig, ax
 
-
-
 def show():
     plt.show()
