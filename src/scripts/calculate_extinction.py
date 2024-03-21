@@ -1,4 +1,4 @@
-from src.tools.models.homogeneous import Birth, Death, Switch, HomogeneousModel
+from src.tools.models.homogeneous import Birth, Death, Switch, IndependentModel
 from src.tools.models.methylation import OneDimensionalNonCollaborativeMethylation as OD
 from src.constants import LIVING_BIRTHRATE_PARAMS
 

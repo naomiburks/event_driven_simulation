@@ -1,10 +1,10 @@
 """Validates events working as properly. Tests rate functions and implementations."""
 
 # pylint:disable=missing-function-docstring
-from src.tools.models.homogeneous import HomogeneousEvent, Birth, Death, Switch
+from src.tools.models.homogeneous import IndependentEvent, Birth, Death, Switch
 
 def test_linear_event_rate():
-    event = HomogeneousEvent(2, 'p')
+    event = IndependentEvent(2, 'p')
     parameters = {'q': 1, 'p': 2}
     state = [1, 3, 5]
     assert event.get_max_rate(state, parameters) == 10

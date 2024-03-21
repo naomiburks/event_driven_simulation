@@ -6,7 +6,7 @@ Tests the model functions to check that they are working properly
 
 import numpy as np
 
-from src.tools.models.homogeneous import Birth, Death, HomogeneousModel, Switch
+from src.tools.models.homogeneous import Birth, Death, IndependentModel, Switch
 
 from src.constants import CONVERGENCE_TOLERANCE
 
@@ -14,7 +14,7 @@ def test_deterministic_run_1():
     e1 = Birth(0, "b")
     e2 = Death(0, "d")
     e3 = Switch(0, 1, "0->1")
-    model = HomogeneousModel([e1, e2, e3]).get_deterministic_model()
+    model = IndependentModel([e1, e2, e3]).get_deterministic_model()
     p = {
         "b": 1,
         "d": 1,
@@ -40,7 +40,7 @@ def test_extinction_1():
         "0->1": 0.1,
     }
 
-    M = HomogeneousModel(events)
+    M = IndependentModel(events)
 
     probabilities = M.calculate_extinction(parameters)
 
@@ -61,7 +61,7 @@ def test_extinction_2():
         "d": 0.4,
     }
 
-    M = HomogeneousModel(events)
+    M = IndependentModel(events)
 
     probability = M.calculate_extinction(parameters)[0]
 
@@ -85,7 +85,7 @@ def test_extinction_3():
         "1->0": 1,
     }
     events = [b1, b2, d1, d2, t1, t2]
-    M = HomogeneousModel(events)
+    M = IndependentModel(events)
     probabilities = M.calculate_extinction(parameters)
     true_probabilities = [0.7632670961354369005, 0.8879150644557030511]
     # calculated as solution to system of equations via wolfram alpha
@@ -115,7 +115,7 @@ def test_extinction_4():
         "2->1": 8,
     }
     events = [b1, b2, b3, d1, d2, d3, t1, t2]
-    M = HomogeneousModel(events)
+    M = IndependentModel(events)
     probabilities = M.calculate_extinction(parameters)
     true_probabilities = [1/3, 1/2, 1/3]  # calculated by hand :(
     for p, true_p in zip(probabilities, true_probabilities):

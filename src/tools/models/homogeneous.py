@@ -4,7 +4,7 @@ import numpy as np
 from scipy import optimize
 from src.constants import CONVERGENCE_TOLERANCE
 
-class HomogeneousEvent(TimeIndependentEvent):
+class IndependentEvent(TimeIndependentEvent):
     """
     These events have rates varying linearly with population size as is common in
     (multitype) branching processes.
@@ -35,7 +35,7 @@ class HomogeneousEvent(TimeIndependentEvent):
         return model_parameters[self.rate_parameter_name]
 
 
-class Birth(HomogeneousEvent):
+class Birth(IndependentEvent):
     """Most commonly birth event in a branching process."""
 
     def implement(self, state):
@@ -43,7 +43,7 @@ class Birth(HomogeneousEvent):
         return state
 
 
-class Death(HomogeneousEvent):
+class Death(IndependentEvent):
     """Most commonly death event in a branching process."""
 
     def implement(self, state):
@@ -51,7 +51,7 @@ class Death(HomogeneousEvent):
         return state
 
 
-class Switch(HomogeneousEvent):
+class Switch(IndependentEvent):
     """Most commonly transition event in a multitype branching process."""
 
     def __init__(self, population_index: int, new_population_index: int, rate_parameter_name: str):
@@ -65,9 +65,9 @@ class Switch(HomogeneousEvent):
         return state
 
 
-class HomogeneousModel(EventModel, PopulationModel):
+class IndependentModel(EventModel, PopulationModel):
     """
-    A linear model is a population model with no interaction between individuals. 
+    A homogeneous model is a population model with no interaction between individuals. 
     All event rates depend on a single population and scale linearly with its size.
 
     PopulationModel is listed after EventModel because super().__init__()
@@ -75,7 +75,7 @@ class HomogeneousModel(EventModel, PopulationModel):
     """
     name = "Linear Model"
 
-    def __init__(self, events: list[HomogeneousEvent]):
+    def __init__(self, events: list[IndependentEvent]):
         super().__init__(events)
         population_count = 1 + \
             max([max(event._necessary_indices) for event in events])
