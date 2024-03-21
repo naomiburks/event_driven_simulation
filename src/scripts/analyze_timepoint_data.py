@@ -6,14 +6,13 @@ from src.tools.plot import show, plot_dictionary_series
 
 filename = "monte_carlo_timepoints_10k"
 
+# loads data
 data = io.read_simulation(filename)
-
+# Extracts basic information
 Ms = [len(data[i]["data"][0][0]) - 1 for i in range(len(data))]
-timepoints = list(data[0]["data"][0].keys())
 sample_counts = len(data[0]["data"])
-print(Ms)
-print(timepoints)
-print(sample_counts)
+timepoints = list(data[0]["data"][0].keys())
+
 
 last_time = timepoints[-1]
 
