@@ -5,8 +5,7 @@ from src.tools.io import save_figure
 from copy import copy
 
 
-infinite_model = OneDimensionalNonCollaborativeMethylation(
-    10).get_limit_model()
+infinite_model = OneDimensionalNonCollaborativeMethylation.get_limit_model()
 point_count = 1001
 base_parameters = copy(LIVING_DEATHRATE_PARAMS)
 del base_parameters["r_mu"]

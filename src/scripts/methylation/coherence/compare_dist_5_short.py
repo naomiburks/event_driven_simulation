@@ -46,7 +46,7 @@ ax.set_ylabel(f"Cell Count at Time t={timepoint}")
 ax.text(0, 0, f"parameters: {parameters}")
 
 
-ax.legend()
+ax.legend() 
 plt.show()
 
 io.save_figure(fig, "compare_dist_5_short")
