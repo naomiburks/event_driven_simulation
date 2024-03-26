@@ -34,7 +34,6 @@ class Model:
         }
 
         percent_completed = -10
-        completion_logged = False
 
 
         for i in range(sample_count):
