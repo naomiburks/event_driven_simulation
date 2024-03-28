@@ -1,4 +1,4 @@
-from src.constants import BASIC_PARAMS_COLL
+from src.constants import BIRTHRATE_PARAMS_COLL
 from src.tools.models.methylation import OneDimensionalColl, OneDimensionalNonCollaborativeMethylation
 from src.tools import io
 import numpy as np
@@ -17,8 +17,9 @@ def _calculate_initial_condition(P, M):
     condition = [0]*(M + 1)
     condition[int(P * M)] = 10
     return condition
+
 data = []
-parameters = copy.deepcopy(BASIC_PARAMS_COLL)
+parameters = copy.deepcopy(BIRTHRATE_PARAMS_COLL)
 parameters["b_0"] = 1.5
 parameters["d_M"] = 0.5
 
