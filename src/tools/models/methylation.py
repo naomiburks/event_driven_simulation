@@ -127,6 +127,93 @@ class OneDimensionalNonCollaborativeMethylation(IndependentModel):
         return model
 
 
+
+class OneDimensionalMethylationColl(Switch):
+    """Describes a methylation event"""
+
+    def __init__(self, site_index, site_count):
+        super().__init__(site_index, site_index + 1, None)
+        self.site_count = site_count
+
+    def get_rate_per_individual(self, model_parameters):
+        """
+        Overrides the function in the base class, 
+        since methylation rate depends on number of unmethylated sites.
+        """
+        M = self.site_count
+        x = self.population_index
+        r_uh = model_parameters["r_uh"]
+        r_uh_m = model_parameters["r_uh_m"]
+        r_hm = model_parameters["r_hm"]
+        r_hm_h = model_parameters["r_hm_h"]
+        r_hm_m = model_parameters["r_hm_m"]
+        r_hu = model_parameters["r_hu"]
+        r_hu_h = model_parameters["r_hu_h"]
+        r_hu_u = model_parameters["r_hu_u"]
+        
+        numerator = (M - x) * (r_uh + r_uh_m * x) * (r_hm + r_hm_h + r_hm_m * x)
+        denominator = r_hu + r_hu_h + r_hu_u * (M - x - 1) + r_hm + r_hm_h + r_hm_m * (x - 1)
+        return numerator / denominator
+
+
+class OneDimensionalDemethylationColl(Switch):
+    """Describes a methylation event"""
+
+    def __init__(self, site_index, site_count):
+        super().__init__(site_index, site_index - 1, None)
+        self.site_count = site_count
+
+    def get_rate_per_individual(self, model_parameters):
+        """
+        Overrides the function in the base class, 
+        since methylation rate depends on number of unmethylated sites.
+        """
+        M = self.site_count
+        x = self.population_index
+        r_mh = model_parameters["r_mh"]
+        r_mh_u = model_parameters["r_mh_u"]
+        r_hm = model_parameters["r_hm"]
+        r_hm_h = model_parameters["r_hm_h"]
+        r_hm_m = model_parameters["r_hm_m"]
+        r_hu = model_parameters["r_hu"]
+        r_hu_h = model_parameters["r_hu_h"]
+        r_hu_u = model_parameters["r_hu_u"]
+        
+        numerator = x * (r_mh + r_mh_u * (M - x)) * (r_hu + r_hu_h + r_hu_u * (M - x))
+        denominator = r_hu + r_hu_h + r_hu_u * (M - x) + r_hm + r_hm_h + r_hm_m * (x - 1)
+        return numerator / denominator
+
+
+
+    
+
+
+
+class OneDimensionalColl(IndependentModel):
+    """
+    Defines the collaborative version of the 1D simplified model. Properties:
+        - M + 1 types: type for each of 0 sites methylated through M sites methylated
+        - Methylation (x -> x+1) and Demthyation (x -> x-1) events are collaborative. 
+        - Birth and death rates vary linearly with methylation level. 
+    """
+    name = "One Dimensional Collaborative Methylation with Linear Fitness"
+
+    def __init__(self, M: int):
+        events = []
+        for i in range(M + 1):
+            if i != M:  # add methylations
+                events.append(OneDimensionalMethylationColl(i, M))
+            if i != 0:  # add demethylations
+                events.append(OneDimensionalDemethylationColl(i, M))
+            # add births and deaths
+            events.append(InterpolatedBirth(i, M + 1, "b_0", "b_M"))
+            events.append(InterpolatedDeath(i, M + 1, "d_0", "d_M"))
+        super().__init__(events)
+        self.name = f"{self.name} ({self.population_count - 1} sites)"
+
+
+
+
 class HalfConstantEvent(ConstantEvent):
     def get_max_rate(self, state, model_parameters):
         return super().get_max_rate(state, model_parameters) / 2

@@ -12,20 +12,6 @@ BASIC_PARAMS = {
     'p': 1.0,
   }
 
-BASIC_PARAMS_COLL = {
-    'b_0': 1.0,
-    'b_M': 1.0, 
-    'd_0': 1.0,
-    'd_M': 1.0, 
-    'r_um': 1.0,
-    'r_mu': 1.0, 
-    'r_mu_u': 10.0,
-    'r_um_m': 10.0,
-    'M': 10,
-    'p': 1.0,
-  }
-
-
 DYING_PARAMS = {
     'b_0': 2.0,
     'b_M': 2.0, 
@@ -58,19 +44,28 @@ LIVING_BIRTHRATE_PARAMS = {
     'p': 1,
   }
 
-COLLABORATIVE_PARAMS = {
+
+
+BIRTHRATE_PARAMS_COLL = {
     'b_0': 1.0,
     'b_M': 1.0, 
     'd_0': 1.0,
     'd_M': 1.0, 
-    'r_um': 1.0,
-    'r_mu': 1.0,
-    'r_um_m': 1.0,
-    'r_mu_u': 1.0,
-    'M': 10,
-    'p': 1,
-    
-}
+    'r_uh': 0.1,
+    'r_hm': 0.5, 
+    'r_mh': 0.1,
+    'r_hu': 0.1, 
+    'r_uh_h': 0,
+    'r_uh_m': 10,
+    'r_hm_h': 10,
+    'r_hm_m': 20,
+    'r_mh_h': 0,
+    'r_mh_u': 1,
+    'r_hu_h': 0,
+    'r_hu_u': 10,
+    'p': 1.0,
+  }
+
 
 BARELY_LIVING_PARAMS = {
     'b_0': 1.8,

@@ -52,7 +52,7 @@ class Death(IndependentEvent):
 
 
 class Switch(IndependentEvent):
-    """Most commonly transition event in a multitype branching process."""
+    """Most commonly a transition event in a multitype branching process."""
 
     def __init__(self, population_index: int, new_population_index: int, rate_parameter_name: str):
         super().__init__(population_index, rate_parameter_name)

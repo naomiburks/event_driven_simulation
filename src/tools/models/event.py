@@ -110,13 +110,13 @@ class EventModel(Model):
                 if rate >= event_index:
                     found_event = event
                     found_max_rate = rate
-                    found_rate = event.get_rate(current_state, current_time)
+                    found_rate = event.get_rate(current_state, current_time, parameters)
                     break
                 event_index -= rate
             if found_event is None:
                 raise RuntimeError("Event was not able to be found!")
             if found_rate / found_max_rate > random():
-                found_event.implement(current_state, current_time)
+                found_event.implement(current_state)
         return current_state
 
 
