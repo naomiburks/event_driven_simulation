@@ -1,11 +1,11 @@
 from src.constants import LIVING_DEATHRATE_PARAMS
-from src.tools.models.methylation import OneDimensionalNonCollaborativeMethylation
+from src.tools.models.methylation import OneDimensionalNonCollaborative
 from src.tools.plot import plot_extinction_comparison, show
 from src.tools.io import save_figure
 from copy import copy
 
 site_count = 20
-finite_model = OneDimensionalNonCollaborativeMethylation(site_count)
+finite_model = OneDimensionalNonCollaborative(site_count)
 base_parameters = copy(LIVING_DEATHRATE_PARAMS)
 del base_parameters["r_mu"]
 del base_parameters["r_um"]

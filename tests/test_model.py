@@ -11,9 +11,9 @@ from src.tools.models.homogeneous import Birth, Death, IndependentModel, Switch
 from src.constants import CONVERGENCE_TOLERANCE
 
 def test_deterministic_run_1():
-    e1 = Birth(0, "b")
-    e2 = Death(0, "d")
-    e3 = Switch(0, 1, "0->1")
+    e1 = Birth(0, lambda x: x["b"])
+    e2 = Death(0, lambda x: x["d"])
+    e3 = Switch(0, 1, lambda x: x["0->1"])
     model = IndependentModel([e1, e2, e3]).get_deterministic_model()
     p = {
         "b": 1,
@@ -26,11 +26,11 @@ def test_deterministic_run_1():
 
 
 def test_extinction_1():
-    b = Birth(0, "b")
-    d = Death(0, "d")
-    b2 = Birth(1, "b2")
-    d2 = Death(1, "d2")
-    t = Switch(0, 1, "0->1")
+    b = Birth(0, lambda x: x["b"])
+    d = Death(0, lambda x: x["d"])
+    b2 = Birth(1, lambda x: x["b2"])
+    d2 = Death(1, lambda x: x["d2"])
+    t = Switch(0, 1, lambda x: x["0->1"])
     events = [b, d, b2, d2, t]
     parameters = {
         "b": 1,
@@ -53,8 +53,8 @@ def test_extinction_1():
 
 
 def test_extinction_2():
-    b = Birth(0, "b")
-    d = Death(0, "d")
+    b = Birth(0, lambda x: x["b"])
+    d = Death(0, lambda x: x["d"])
     events = [b, d]
     parameters = {
         "b": 1,
@@ -70,12 +70,12 @@ def test_extinction_2():
 
 
 def test_extinction_3():
-    b1 = Birth(0, "b1")
-    b2 = Birth(1, "b2")
-    d1 = Death(0, "d1")
-    d2 = Death(1, "d2")
-    t1 = Switch(0, 1, "0->1")
-    t2 = Switch(1, 0, "1->0")
+    b1 = Birth(0, lambda x: x["b1"])
+    b2 = Birth(1, lambda x: x["b2"])
+    d1 = Death(0, lambda x: x["d1"])
+    d2 = Death(1, lambda x: x["d2"])
+    t1 = Switch(0, 1, lambda x: x["0->1"])
+    t2 = Switch(1, 0, lambda x: x["1->0"])
     parameters = {
         "b1": 2,
         "b2": 1,
@@ -96,14 +96,14 @@ def test_extinction_3():
 
 
 def test_extinction_4():
-    b1 = Birth(0, "b0")
-    b2 = Birth(1, "b1")
-    b3 = Birth(2, "b2")
-    d1 = Death(0, "d0")
-    d2 = Death(1, "d1")
-    d3 = Death(2, "d2")
-    t1 = Switch(2, 1, "2->1")
-    t2 = Switch(1, 0, "1->0")
+    b1 = Birth(0, lambda x: x["b0"])
+    b2 = Birth(1, lambda x: x["b1"])
+    b3 = Birth(2, lambda x: x["b2"])
+    d1 = Death(0, lambda x: x["d0"])
+    d2 = Death(1, lambda x: x["d1"])
+    d3 = Death(2, lambda x: x["d2"])
+    t1 = Switch(2, 1, lambda x: x["2->1"])
+    t2 = Switch(1, 0, lambda x: x["1->0"])
     parameters = {
         "b0": 3,
         "d0": 1,

@@ -12,10 +12,10 @@ class IndependentEvent(TimeIndependentEvent):
     does to the state.
     """
 
-    def __init__(self, population_index: int, rate_parameter_name: str):
+    def __init__(self, population_index: int, get_rate_from_parameters):
         super().__init__()
         self.population_index = population_index
-        self.rate_parameter_name = rate_parameter_name
+        self.get_rate_from_parameters = get_rate_from_parameters
         self._necessary_indices = [population_index]
 
     def get_max_rate(self, state, model_parameters):
@@ -27,12 +27,10 @@ class IndependentEvent(TimeIndependentEvent):
 
     def get_rate_per_individual(self, model_parameters):
         """
-        By default, the per-individual rate is given as a parameter. 
-        Override this function for other ways to calculate rate. 
-        For example, the per-individual rate could depend on parameters without 
-        being one itself.
+        Returns the per-individual rate at which the event occurs
         """
-        return model_parameters[self.rate_parameter_name]
+        
+        return self.get_rate_from_parameters(model_parameters)
 
 
 class Birth(IndependentEvent):
@@ -54,8 +52,8 @@ class Death(IndependentEvent):
 class Switch(IndependentEvent):
     """Most commonly a transition event in a multitype branching process."""
 
-    def __init__(self, population_index: int, new_population_index: int, rate_parameter_name: str):
-        super().__init__(population_index, rate_parameter_name)
+    def __init__(self, population_index: int, new_population_index: int, get_rate_from_parameters):
+        super().__init__(population_index, get_rate_from_parameters)
         self.new_population_index = new_population_index
         self._necessary_indices.append(self.new_population_index)
 

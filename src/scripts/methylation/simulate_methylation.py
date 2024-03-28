@@ -10,7 +10,7 @@ SIMULATION_PATH = "example"
 
 if __name__ == "__main__":
     SITE_COUNT = 7
-    model = methylation.OneDimensionalNonCollaborativeMethylation(SITE_COUNT)
+    model = methylation.OneDimensionalNonCollaborative(SITE_COUNT)
     det_model = model.get_deterministic_model()
     parameters = {
         "r_um": 1,

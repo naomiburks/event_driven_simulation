@@ -16,78 +16,49 @@ from scipy.optimize import root, minimize
 
 from src.tools.models.event import (ConstantEvent, ConstantEventModel, Event,
                                     EventModel)
-from src.tools.models.homogeneous import (Birth, Death, IndependentEvent,
-                                          IndependentModel, Switch)
+from src.tools.models.homogeneous import Birth, Death, IndependentModel, Switch
 from src.tools.models.model import Model
 
 
-class OneDimensionalMethylation(Switch):
+class OneDimensionalNonCollaborativeMethylation(Switch):
     """Describes a methylation event"""
 
-    def __init__(self, site_index, site_count, rate_parameter_name):
-        super().__init__(site_index, site_index + 1, rate_parameter_name)
+    def __init__(self, site_index, site_count):    
         self.site_count = site_count
+        def get_rate_from_parameters(parameters):
+            return (self.site_count - self.population_index) * parameters["r_um"]
 
-    def get_rate_per_individual(self, model_parameters):
-        """
-        Overrides the function in the base class, 
-        since methylation rate depends on number of unmethylated sites.
-        """
-        rate_parameter = model_parameters[self.rate_parameter_name]
-        return (self.site_count - self.population_index) * rate_parameter
+        super().__init__(site_index, site_index + 1, get_rate_from_parameters)
+        
 
-
-class OneDimensionalDemethylation(Switch):
+class OneDimensionalNonCollaborativeDemethylation(Switch):
     """Describes a demethylation event"""
 
-    def __init__(self, site_index, rate_parameter_name):
-        super().__init__(site_index, site_index - 1, rate_parameter_name)
-
-    def get_rate_per_individual(self, model_parameters):
-        """
-        Overrides the function in the base class, 
-        since demethylation rate depends on number of methylated sites.
-        """
-        rate_parameter = model_parameters[self.rate_parameter_name]
-        return self.population_index * rate_parameter
+    def __init__(self, site_index, site_count):
+        self.site_count = site_count
+        def get_rate_from_parameters(parameters):
+            return self.population_index * parameters["r_mu"]
+        
+        super().__init__(site_index, site_index - 1, get_rate_from_parameters)
 
 
-class InterpolatedLinearEvent(IndependentEvent):
-    """
-    The rate of an interpolated linear event is calculated 
-    linearly between the rate for pop 0 and pop max.
-    """
-
-    def __init__(self, population_index, population_count,
-                 rate_min_parameter_name, rate_max_parameter_name):
-        super().__init__(population_index, None)
-        self.population_count = population_count
-        self.rate_min_parameter_name = rate_min_parameter_name
-        self.rate_max_parameter_name = rate_max_parameter_name
-
-    def get_rate_per_individual(self, model_parameters):
-        rate_max = model_parameters[self.rate_max_parameter_name]
-        rate_min = model_parameters[self.rate_min_parameter_name]
-
-        rate = (rate_max * self.population_index +
-                rate_min * (self.population_count - self.population_index - 1)) / \
-            (self.population_count - 1)
-        return rate
+class OneDimensionalBirth(Birth):
+    def __init__(self, site_index, site_count):
+        self.site_count = site_count
+        def get_rate_from_parameters(params):
+            return (params["b_0"] * (self.site_count - self.population_index) + params["b_M"] * self.population_index) / self.site_count
+        super().__init__(site_index, get_rate_from_parameters)
 
 
-class InterpolatedBirth(InterpolatedLinearEvent, Birth):
-    """
-    Interpolated birth is both a Birth and an InterpolatedLinearEvent
-    """
+class OneDimensionalDeath(Death):
+    def __init__(self, site_index, site_count):
+        self.site_count = site_count
+        def get_rate_from_parameters(params):
+            return (params["d_0"] * (self.site_count - self.population_index) + params["d_M"] * self.population_index) / self.site_count
+        super().__init__(site_index, get_rate_from_parameters)
 
 
-class InterpolatedDeath(InterpolatedLinearEvent, Death):
-    """
-    Interpolated death is both a Death and an InterpolatedLinearEvent
-    """
-
-
-class OneDimensionalNonCollaborativeMethylation(IndependentModel):
+class OneDimensionalNonCollaborative(IndependentModel):
     """
     Defines a model with the following properties:
         - M + 1 types: type for each of 0 sites methylated through M sites methylated
@@ -101,12 +72,12 @@ class OneDimensionalNonCollaborativeMethylation(IndependentModel):
         events = []
         for i in range(M + 1):
             if i != M:  # add methylations
-                events.append(OneDimensionalMethylation(i, M, "r_um"))
+                events.append(OneDimensionalNonCollaborativeMethylation(i, M))
             if i != 0:  # add demethylations
-                events.append(OneDimensionalDemethylation(i, "r_mu"))
+                events.append(OneDimensionalNonCollaborativeDemethylation(i, M))
             # add births and deaths
-            events.append(InterpolatedBirth(i, M + 1, "b_0", "b_M"))
-            events.append(InterpolatedDeath(i, M + 1, "d_0", "d_M"))
+            events.append(OneDimensionalBirth(i, M))
+            events.append(OneDimensionalDeath(i, M))
         super().__init__(events)
         self.name = f"{self.name} ({self.population_count - 1} sites)"
 
@@ -127,69 +98,57 @@ class OneDimensionalNonCollaborativeMethylation(IndependentModel):
         return model
 
 
-
-class OneDimensionalMethylationColl(Switch):
+class OneDimensionalCollaborativeMethylation(Switch):
     """Describes a methylation event"""
 
     def __init__(self, site_index, site_count):
-        super().__init__(site_index, site_index + 1, None)
+
         self.site_count = site_count
+        def get_rate_from_parameters(parameters):
+            M = self.site_count
+            x = self.population_index
+            r_uh = parameters["r_uh"]
+            r_uh_m = parameters["r_uh_m"]
+            r_hm = parameters["r_hm"]
+            r_hm_h = parameters["r_hm_h"]
+            r_hm_m = parameters["r_hm_m"]
+            r_hu = parameters["r_hu"]
+            r_hu_h = parameters["r_hu_h"]
+            r_hu_u = parameters["r_hu_u"]
+            numerator = (M - x) * (r_uh + r_uh_m * x) * (r_hm + r_hm_h + r_hm_m * x)
+            denominator = r_hu + r_hu_h + r_hu_u * (M - x - 1) + r_hm + r_hm_h + r_hm_m * (x - 1)
+            return numerator / denominator
 
-    def get_rate_per_individual(self, model_parameters):
-        """
-        Overrides the function in the base class, 
-        since methylation rate depends on number of unmethylated sites.
-        """
-        M = self.site_count
-        x = self.population_index
-        r_uh = model_parameters["r_uh"]
-        r_uh_m = model_parameters["r_uh_m"]
-        r_hm = model_parameters["r_hm"]
-        r_hm_h = model_parameters["r_hm_h"]
-        r_hm_m = model_parameters["r_hm_m"]
-        r_hu = model_parameters["r_hu"]
-        r_hu_h = model_parameters["r_hu_h"]
-        r_hu_u = model_parameters["r_hu_u"]
+        super().__init__(site_index, site_index + 1, get_rate_from_parameters)
         
-        numerator = (M - x) * (r_uh + r_uh_m * x) * (r_hm + r_hm_h + r_hm_m * x)
-        denominator = r_hu + r_hu_h + r_hu_u * (M - x - 1) + r_hm + r_hm_h + r_hm_m * (x - 1)
-        return numerator / denominator
 
-
-class OneDimensionalDemethylationColl(Switch):
-    """Describes a methylation event"""
+class OneDimensionalCollaborativeDemethylation(Switch):
+    """Describes a demethylation event"""
 
     def __init__(self, site_index, site_count):
-        super().__init__(site_index, site_index - 1, None)
         self.site_count = site_count
+        def get_rate_from_parameters(model_parameters):
+            M = self.site_count
+            x = self.population_index
+            r_mh = model_parameters["r_mh"]
+            r_mh_u = model_parameters["r_mh_u"]
+            r_hm = model_parameters["r_hm"]
+            r_hm_h = model_parameters["r_hm_h"]
+            r_hm_m = model_parameters["r_hm_m"]
+            r_hu = model_parameters["r_hu"]
+            r_hu_h = model_parameters["r_hu_h"]
+            r_hu_u = model_parameters["r_hu_u"]
+            
+            numerator = x * (r_mh + r_mh_u * (M - x)) * (r_hu + r_hu_h + r_hu_u * (M - x))
+            denominator = r_hu + r_hu_h + r_hu_u * (M - x) + r_hm + r_hm_h + r_hm_m * (x - 1)
+            return numerator / denominator
 
-    def get_rate_per_individual(self, model_parameters):
-        """
-        Overrides the function in the base class, 
-        since methylation rate depends on number of unmethylated sites.
-        """
-        M = self.site_count
-        x = self.population_index
-        r_mh = model_parameters["r_mh"]
-        r_mh_u = model_parameters["r_mh_u"]
-        r_hm = model_parameters["r_hm"]
-        r_hm_h = model_parameters["r_hm_h"]
-        r_hm_m = model_parameters["r_hm_m"]
-        r_hu = model_parameters["r_hu"]
-        r_hu_h = model_parameters["r_hu_h"]
-        r_hu_u = model_parameters["r_hu_u"]
+
+        super().__init__(site_index, site_index - 1, get_rate_from_parameters)
         
-        numerator = x * (r_mh + r_mh_u * (M - x)) * (r_hu + r_hu_h + r_hu_u * (M - x))
-        denominator = r_hu + r_hu_h + r_hu_u * (M - x) + r_hm + r_hm_h + r_hm_m * (x - 1)
-        return numerator / denominator
 
 
-
-    
-
-
-
-class OneDimensionalColl(IndependentModel):
+class OneDimensionalCollaborative(IndependentModel):
     """
     Defines the collaborative version of the 1D simplified model. Properties:
         - M + 1 types: type for each of 0 sites methylated through M sites methylated
@@ -202,12 +161,12 @@ class OneDimensionalColl(IndependentModel):
         events = []
         for i in range(M + 1):
             if i != M:  # add methylations
-                events.append(OneDimensionalMethylationColl(i, M))
+                events.append(OneDimensionalCollaborativeMethylation(i, M))
             if i != 0:  # add demethylations
-                events.append(OneDimensionalDemethylationColl(i, M))
+                events.append(OneDimensionalCollaborativeDemethylation(i, M))
             # add births and deaths
-            events.append(InterpolatedBirth(i, M + 1, "b_0", "b_M"))
-            events.append(InterpolatedDeath(i, M + 1, "d_0", "d_M"))
+            events.append(OneDimensionalBirth(i, M))
+            events.append(OneDimensionalDeath(i, M))
         super().__init__(events)
         self.name = f"{self.name} ({self.population_count - 1} sites)"
 

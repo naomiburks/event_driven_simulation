@@ -1,5 +1,5 @@
 from src.constants import LIVING_BIRTHRATE_PARAMS
-from src.tools.models.methylation import OneDimensionalNonCollaborativeMethylation
+from src.tools.models.methylation import OneDimensionalNonCollaborative
 from src.tools import io
 import numpy as np
 
@@ -22,7 +22,7 @@ parameters = LIVING_BIRTHRATE_PARAMS
 
 for M in Ms:
     print(f"starting {simulation_count} simulations for {M}-site model")
-    model = OneDimensionalNonCollaborativeMethylation(M)
+    model = OneDimensionalNonCollaborative(M)
     initial_condition = _calculate_initial_condition(P, M)
     result = model.generate_simulation_data(parameters, initial_condition, timepoints, sample_count = simulation_count)
     data.append(result)

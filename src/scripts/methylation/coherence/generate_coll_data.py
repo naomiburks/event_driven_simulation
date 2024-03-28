@@ -1,5 +1,5 @@
 from src.constants import BIRTHRATE_PARAMS_COLL
-from src.tools.models.methylation import OneDimensionalColl, OneDimensionalNonCollaborativeMethylation
+from src.tools.models.methylation import OneDimensionalCollaborative, OneDimensionalNonCollaborative
 from src.tools import io
 import numpy as np
 import copy
@@ -25,7 +25,7 @@ parameters["d_M"] = 0.5
 
 for M in Ms:
     print(f"starting {simulation_count} simulations for {M}-site model")
-    model = OneDimensionalColl(M)
+    model = OneDimensionalCollaborative(M)
     initial_condition = _calculate_initial_condition(P, M)
     result = model.generate_simulation_data(parameters, initial_condition, timepoints, sample_count = simulation_count)
     data.append(result)

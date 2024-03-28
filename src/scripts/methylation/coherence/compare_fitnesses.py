@@ -1,5 +1,5 @@
 from src.tools import io
-from src.tools.models.methylation import OneDimensionalNonCollaborativeMethylation as ODModel
+from src.tools.models.methylation import OneDimensionalNonCollaborative as ODModel
 import matplotlib.pyplot as plt
 from src.constants import LIVING_BIRTHRATE_PARAMS
 import copy

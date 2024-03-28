@@ -1,5 +1,5 @@
 from src.tools import io
-from src.tools.models.methylation import OneDimensionalNonCollaborativeMethylation
+from src.tools.models.methylation import OneDimensionalNonCollaborative
 import matplotlib.pyplot as plt
 
 plt.rcParams['svg.fonttype'] = 'none'
@@ -30,7 +30,7 @@ for i, x in enumerate(simulated_average):
 
 initial_state = data[M]["data"][0][0]
 
-average_model = OneDimensionalNonCollaborativeMethylation(M).get_deterministic_model()
+average_model = OneDimensionalNonCollaborative(M).get_deterministic_model()
 
 calculated_average = average_model.generate_simulation_data(parameters, initial_state, [timepoint])["data"][0][timepoint]
 

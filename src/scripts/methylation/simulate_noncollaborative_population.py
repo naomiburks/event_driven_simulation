@@ -1,6 +1,6 @@
 from src.tools.plot import plot_timepoint_data, show
 from src.tools.io import save_figure
-from src.tools.models.methylation import OneDimensionalNonCollaborativeMethylation
+from src.tools.models.methylation import OneDimensionalNonCollaborative
 
 
 
@@ -13,7 +13,7 @@ parameters = {
     "d_M": 0.1,
 }
 SITE_COUNT = 5
-model = OneDimensionalNonCollaborativeMethylation(SITE_COUNT)
+model = OneDimensionalNonCollaborative(SITE_COUNT)
 print(f"extinction: {model.calculate_extinction(parameters)}")
 model2 = model.get_deterministic_model()
 initial_state = [0] * (SITE_COUNT + 1)

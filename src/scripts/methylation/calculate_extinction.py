@@ -1,4 +1,4 @@
-from src.tools.models.methylation import OneDimensionalNonCollaborativeMethylation as OD, BranchingDiffusion as BD
+from src.tools.models.methylation import OneDimensionalNonCollaborative as OD, BranchingDiffusion as BD
 from src.constants import LIVING_BIRTHRATE_PARAMS
 
 Ms = [5, 10, 20, 40, 80]

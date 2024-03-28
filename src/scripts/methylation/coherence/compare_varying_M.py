@@ -1,5 +1,5 @@
 from src.tools import io
-from src.tools.models.methylation import OneDimensionalNonCollaborativeMethylation
+from src.tools.models.methylation import OneDimensionalNonCollaborative
 import matplotlib.pyplot as plt
 import os
 from src.tools import plot
@@ -40,7 +40,7 @@ for M in Ms:
 
 initial_states = {M: data[M]["data"][0][0] for M in Ms}
 
-average_models = {M: OneDimensionalNonCollaborativeMethylation(M).get_deterministic_model() for M in Ms}
+average_models = {M: OneDimensionalNonCollaborative(M).get_deterministic_model() for M in Ms}
 
 average_data = {M : average_models[M].generate_simulation_data(parameters, initial_states[M], timepoints)["data"][0] for M in Ms}
 

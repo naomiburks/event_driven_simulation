@@ -1,4 +1,4 @@
-from src.tools.models.methylation import OneDimensionalNonCollaborativeMethylation
+from src.tools.models.methylation import OneDimensionalNonCollaborative
 from src.constants import LIVING_BIRTHRATE_PARAMS
 from src.tools import io
 
@@ -13,7 +13,7 @@ initial_condition = {P: 10}
 data = []
 parameters = LIVING_BIRTHRATE_PARAMS
 
-model = OneDimensionalNonCollaborativeMethylation.get_limit_model()
+model = OneDimensionalNonCollaborative.get_limit_model()
 
 result = model.generate_simulation_data(parameters, initial_condition, timepoints, sample_count = simulation_count)
 

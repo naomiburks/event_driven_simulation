@@ -1,5 +1,5 @@
 from src.constants import LIVING_DEATHRATE_PARAMS
-from src.tools.models.methylation import OneDimensionalNonCollaborativeMethylation
+from src.tools.models.methylation import OneDimensionalNonCollaborative
 from src.tools.plot import plot_extinction_comparison, show
 from src.tools.io import save_figure
 from copy import copy
@@ -7,7 +7,7 @@ from copy import copy
 finite_models = []
 Ms = [3, 10, 30, 100]
 for M in Ms:
-    finite_models.append(OneDimensionalNonCollaborativeMethylation(M))
+    finite_models.append(OneDimensionalNonCollaborative(M))
 
 infinite_model = finite_models[0].get_limit_model()
 point_count = 1001
