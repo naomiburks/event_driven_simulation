@@ -13,7 +13,7 @@ parameters = {
 
 site = SingleSite()
 
-stable_distribution = site.get_stable_state(parameters)
+stable_distribution = site.get_stable_distribution(parameters)
 print(stable_distribution)
 u = stable_distribution["u"]
 h = stable_distribution["h"]

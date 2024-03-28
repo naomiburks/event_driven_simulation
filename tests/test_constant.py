@@ -22,7 +22,7 @@ def test_stable_state_1():
         "B->A": 1,
     }
     model = ConstantEventModel([e1, e2])
-    stable_state = model.get_stable_state(parameters)
+    stable_state = model.get_stable_distribution(parameters)
 
     assert stable_state == {
         "A": 1/3, 
@@ -40,7 +40,7 @@ def test_stable_state_2():
         "C->A": 1,
     }
     model = ConstantEventModel([e1, e2, e3])
-    stable_state = model.get_stable_state(parameters)
+    stable_state = model.get_stable_distribution(parameters)
 
     assert stable_state == {
         "A": 1/5, 

@@ -132,7 +132,7 @@ class ConstantEventModel(EventModel):
 
         super().__init__(events)
 
-    def get_stable_state(self, parameters):
+    def get_stable_distribution(self, parameters):
         """
         Returns the left eigenvector of the transition matrix whose eigenvalue is 0 with appropriate norm.
         Accomplishes this by solving the equation Ax=b, where b = [1, 0, .., 0] and A is the matrix
