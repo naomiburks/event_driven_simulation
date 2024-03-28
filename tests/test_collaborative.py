@@ -6,7 +6,6 @@ from copy import deepcopy
 
 def test_model_coherence():
     M = 10
-    x = 1
     for _ in range(4):
         params = {
             'b_0': random(),
