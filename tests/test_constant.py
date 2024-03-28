@@ -3,8 +3,8 @@ import numpy as np
 from scipy.linalg import eig
 
 def test_transition_matrix():
-    e1 = ConstantEvent("A", "B", "A->B")
-    e2 = ConstantEvent("B", "A", "B->A")
+    e1 = ConstantEvent("A", "B", lambda x : x["A->B"])
+    e2 = ConstantEvent("B", "A", lambda x : x["B->A"])
     parameters = {
         "A->B": 1,
         "B->A": 1,
@@ -15,8 +15,8 @@ def test_transition_matrix():
 
 
 def test_stable_state_1():
-    e1 = ConstantEvent("A", "B", "A->B")
-    e2 = ConstantEvent("B", "A", "B->A")
+    e1 = ConstantEvent("A", "B", lambda x : x["A->B"])
+    e2 = ConstantEvent("B", "A", lambda x : x["B->A"])
     parameters = {
         "A->B": 2,
         "B->A": 1,
@@ -31,9 +31,9 @@ def test_stable_state_1():
 
 
 def test_stable_state_2():
-    e1 = ConstantEvent("A", "B", "A->B")
-    e2 = ConstantEvent("B", "C", "B->C")
-    e3 = ConstantEvent("C", "A", "C->A")
+    e1 = ConstantEvent("A", "B", lambda x : x["A->B"])
+    e2 = ConstantEvent("B", "C", lambda x : x["B->C"])
+    e3 = ConstantEvent("C", "A", lambda x : x["C->A"])
     parameters = {
         "A->B": 2,
         "B->C": 1,

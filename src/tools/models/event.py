@@ -9,20 +9,21 @@ from src.tools.models.model import Model
 
 class Event:
     """
-    Abstract class used by EventModels. 
+    Abstract class used by Event Models. 
 
     To instantiate an event, you must override:
-     - rate function | (state, parameters) -> nonnegative number
+     - rate function | (state, time, parameters) -> nonnegative number
+     - max rate function | (state, parameters) -> nonnegative number
      - implement function | state -> state
     """
 
     @abstractmethod
     def get_rate(self, state, time, model_parameters):
-        """Returns a nonnegative number: the frequency the event occurs"""
+        """Returns the instantaneous rate at which the event occurs at the current state and time."""
 
     @abstractmethod
     def get_max_rate(self, state, model_parameters):
-        pass
+        """Returns the maximum possible rate (across time) at which the event could occur."""
 
     @abstractmethod
     def implement(self, state, *kwargs):
@@ -30,20 +31,21 @@ class Event:
         Mutates the state to become the new state."""
 
 class TimeIndependentEvent(Event):
+    """TimeIndependentEvents """
     def get_rate(self, state, time, model_parameters):
         return self.get_max_rate(state, model_parameters)
 
 class ConstantEvent(TimeIndependentEvent):
     """Constant events occur only when the model is in a certain state. 
     They transfor the state into a new state."""
-    def __init__(self, initial_state, end_state, rate_parameter_name):
+    def __init__(self, initial_state, end_state, get_rate_from_parameters):
         self.initial_state = initial_state
         self.end_state = end_state
-        self.rate_parameter_name = rate_parameter_name
+        self.get_rate_from_parameters = get_rate_from_parameters
 
     def get_max_rate(self, state, model_parameters):
         if state == self.initial_state:
-            return model_parameters[self.rate_parameter_name]
+            return self.get_rate_from_parameters(model_parameters)
         return 0
 
     def implement(self, state):

@@ -16,7 +16,8 @@ class Model:
     def generate_simulation_data(self, parameters: dict, initial_state, timepoints: list, sample_count: int = 1,
                                  **kwargs):
         """
-        Useful to run simulations. 
+        Returns result of run between timepoints starting from initial_state sample_count times.
+        
         Data is output in json-style:
         {
             "model": [model name],

@@ -212,22 +212,15 @@ class OneDimensionalColl(IndependentModel):
         self.name = f"{self.name} ({self.population_count - 1} sites)"
 
 
-
-
-class HalfConstantEvent(ConstantEvent):
-    def get_max_rate(self, state, model_parameters):
-        return super().get_max_rate(state, model_parameters) / 2
-
-
 class SingleSite(ConstantEventModel):
     def __init__(self):
         events = []
-        events.append(ConstantEvent("u", "h", "r_uh"))
-        events.append(ConstantEvent("h", "m", "r_hm"))
-        events.append(ConstantEvent("h", "u", "r_hu"))
-        events.append(ConstantEvent("m", "h", "r_mh"))
-        events.append(ConstantEvent("m", "u", "b"))
-        events.append(HalfConstantEvent("h", "u", "b"))
+        events.append(ConstantEvent("u", "h", lambda x : x["r_uh"]))
+        events.append(ConstantEvent("h", "m", lambda x : x["r_hm"]))
+        events.append(ConstantEvent("h", "u", lambda x : x["r_hu"]))
+        events.append(ConstantEvent("m", "h", lambda x : x["r_mh"]))
+        events.append(ConstantEvent("m", "u", lambda x : x["b"]))
+        events.append(ConstantEvent("h", "u", lambda x : x["b"] / 2))
         super().__init__(events)
 
 
