@@ -4,11 +4,11 @@ from src.tools import io
 import numpy as np
 import copy
 
-Ms = [5]
+Ms = [5, 10, 20, 40]
 timepoints = list(range(11))
-P = 0.8
+P = 0.5
 simulation_count = 1
-filename = "monte_carlo_timepoints_10K_coll"
+filename = f"monte_carlo_timepoints_{simulation_count}_coll"
 
 
 
@@ -20,8 +20,20 @@ def _calculate_initial_condition(P, M):
 
 data = []
 parameters = copy.deepcopy(BIRTHRATE_PARAMS_COLL)
-parameters["b_0"] = 1.5
-parameters["d_M"] = 0.5
+parameters["b_0"] = 1
+parameters["b_M"] = 1
+parameters["d_M"] = 0.6
+parameters["d_0"] = 0.6
+parameters["r_hm"] = 0.1
+parameters["r_uh_m"] = 0.02
+parameters["r_hm_m"] = 0.02
+parameters["r_uh_h"] = 0.01
+parameters["r_hm_h"] = 0.01
+parameters["r_hu_u"] = 0.02
+parameters["r_hu_h"] = 0.01
+parameters["r_mh_u"] = 0.02
+parameters["r_mh_h"] = 0.01
+
 
 for M in Ms:
     print(f"starting {simulation_count} simulations for {M}-site model")
@@ -32,4 +44,4 @@ for M in Ms:
 
 print(data)
 
-"""io.write_simulation(data, filename)"""
+io.write_simulation(data, filename)

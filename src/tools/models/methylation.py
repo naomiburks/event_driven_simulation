@@ -14,13 +14,31 @@ import numpy as np
 from scipy.integrate import odeint
 from scipy.optimize import root, minimize
 
-from src.tools.models.event import (ConstantEvent, ConstantEventModel, Event,
+from src.tools.models.event import (ConstantEvent, ConstantEventModel, TimeIndependentEvent,
                                     EventModel)
-from src.tools.models.homogeneous import Birth, Death, IndependentModel, Switch
+from src.tools.models.homogeneous import IndependentBirth, IndependentDeath, IndependentModel, IndependentSwitch
 from src.tools.models.model import Model
 
 
-class OneDimensionalNonCollaborativeMethylation(Switch):
+# Events used by the one dimensional models
+
+class OneDimensionalBirth(IndependentBirth):
+    def __init__(self, site_index, site_count):
+        self.site_count = site_count
+        def get_rate_from_parameters(params):
+            return (params["b_0"] * (self.site_count - self.population_index) + params["b_M"] * self.population_index) / self.site_count
+        super().__init__(site_index, get_rate_from_parameters)
+
+
+class OneDimensionalDeath(IndependentDeath):
+    def __init__(self, site_index, site_count):
+        self.site_count = site_count
+        def get_rate_from_parameters(params):
+            return (params["d_0"] * (self.site_count - self.population_index) + params["d_M"] * self.population_index) / self.site_count
+        super().__init__(site_index, get_rate_from_parameters)
+
+
+class OneDimensionalNonCollaborativeMethylation(IndependentSwitch):
     """Describes a methylation event"""
 
     def __init__(self, site_index, site_count):    
@@ -31,7 +49,7 @@ class OneDimensionalNonCollaborativeMethylation(Switch):
         super().__init__(site_index, site_index + 1, get_rate_from_parameters)
         
 
-class OneDimensionalNonCollaborativeDemethylation(Switch):
+class OneDimensionalNonCollaborativeDemethylation(IndependentSwitch):
     """Describes a demethylation event"""
 
     def __init__(self, site_index, site_count):
@@ -42,21 +60,58 @@ class OneDimensionalNonCollaborativeDemethylation(Switch):
         super().__init__(site_index, site_index - 1, get_rate_from_parameters)
 
 
-class OneDimensionalBirth(Birth):
+class OneDimensionalCollaborativeMethylation(IndependentSwitch):
+    """Describes a methylation event"""
+
+    def __init__(self, site_index, site_count):
+
+        self.site_count = site_count
+        def get_rate_from_parameters(parameters):
+            M = self.site_count
+            x = self.population_index
+            r_uh = parameters["r_uh"]
+            r_uh_m = parameters["r_uh_m"]
+            r_hm = parameters["r_hm"]
+            r_hm_h = parameters["r_hm_h"]
+            r_hm_m = parameters["r_hm_m"]
+
+            r_hu = parameters["r_hu"]
+            r_hu_h = parameters["r_hu_h"]
+            r_hu_u = parameters["r_hu_u"]            
+            
+            numerator = (M - x) * (r_uh + r_uh_m * x / M) * (r_hm + r_hm_h / M + r_hm_m * x / M)
+            denominator = r_hu + r_hu_h / M + r_hu_u * (M - x - 1) / M + r_hm + r_hm_h / M + r_hm_m * x / M
+            return numerator / denominator
+
+        super().__init__(site_index, site_index + 1, get_rate_from_parameters)
+        
+
+class OneDimensionalCollaborativeDemethylation(IndependentSwitch):
+    """Describes a demethylation event"""
+
     def __init__(self, site_index, site_count):
         self.site_count = site_count
-        def get_rate_from_parameters(params):
-            return (params["b_0"] * (self.site_count - self.population_index) + params["b_M"] * self.population_index) / self.site_count
-        super().__init__(site_index, get_rate_from_parameters)
+        def get_rate_from_parameters(model_parameters):
+            M = self.site_count
+            x = self.population_index
+            r_mh = model_parameters["r_mh"]
+            r_mh_u = model_parameters["r_mh_u"]
+            r_hm = model_parameters["r_hm"]
+            r_hm_h = model_parameters["r_hm_h"]
+            r_hm_m = model_parameters["r_hm_m"]
+            r_hu = model_parameters["r_hu"]
+            r_hu_h = model_parameters["r_hu_h"]
+            r_hu_u = model_parameters["r_hu_u"]
+            
+            numerator = x * (r_mh + r_mh_u * (M - x) / M) * (r_hu + r_hu_h / M + r_hu_u * (M - x) / M)
+            denominator = r_hu + r_hu_h / M + r_hu_u * (M - x) / M + r_hm + r_hm_h / M + r_hm_m * (x - 1) / M
+            return numerator / denominator
 
 
-class OneDimensionalDeath(Death):
-    def __init__(self, site_index, site_count):
-        self.site_count = site_count
-        def get_rate_from_parameters(params):
-            return (params["d_0"] * (self.site_count - self.population_index) + params["d_M"] * self.population_index) / self.site_count
-        super().__init__(site_index, get_rate_from_parameters)
+        super().__init__(site_index, site_index - 1, get_rate_from_parameters)
+        
 
+# One Dimensional Models
 
 class OneDimensionalNonCollaborative(IndependentModel):
     """
@@ -98,56 +153,6 @@ class OneDimensionalNonCollaborative(IndependentModel):
         return model
 
 
-class OneDimensionalCollaborativeMethylation(Switch):
-    """Describes a methylation event"""
-
-    def __init__(self, site_index, site_count):
-
-        self.site_count = site_count
-        def get_rate_from_parameters(parameters):
-            M = self.site_count
-            x = self.population_index
-            r_uh = parameters["r_uh"]
-            r_uh_m = parameters["r_uh_m"]
-            r_hm = parameters["r_hm"]
-            r_hm_h = parameters["r_hm_h"]
-            r_hm_m = parameters["r_hm_m"]
-            r_hu = parameters["r_hu"]
-            r_hu_h = parameters["r_hu_h"]
-            r_hu_u = parameters["r_hu_u"]
-            numerator = (M - x) * (r_uh + r_uh_m * x) * (r_hm + r_hm_h + r_hm_m * x)
-            denominator = r_hu + r_hu_h + r_hu_u * (M - x - 1) + r_hm + r_hm_h + r_hm_m * (x - 1)
-            return numerator / denominator
-
-        super().__init__(site_index, site_index + 1, get_rate_from_parameters)
-        
-
-class OneDimensionalCollaborativeDemethylation(Switch):
-    """Describes a demethylation event"""
-
-    def __init__(self, site_index, site_count):
-        self.site_count = site_count
-        def get_rate_from_parameters(model_parameters):
-            M = self.site_count
-            x = self.population_index
-            r_mh = model_parameters["r_mh"]
-            r_mh_u = model_parameters["r_mh_u"]
-            r_hm = model_parameters["r_hm"]
-            r_hm_h = model_parameters["r_hm_h"]
-            r_hm_m = model_parameters["r_hm_m"]
-            r_hu = model_parameters["r_hu"]
-            r_hu_h = model_parameters["r_hu_h"]
-            r_hu_u = model_parameters["r_hu_u"]
-            
-            numerator = x * (r_mh + r_mh_u * (M - x)) * (r_hu + r_hu_h + r_hu_u * (M - x))
-            denominator = r_hu + r_hu_h + r_hu_u * (M - x) + r_hm + r_hm_h + r_hm_m * (x - 1)
-            return numerator / denominator
-
-
-        super().__init__(site_index, site_index - 1, get_rate_from_parameters)
-        
-
-
 class OneDimensionalCollaborative(IndependentModel):
     """
     Defines the collaborative version of the 1D simplified model. Properties:
@@ -171,6 +176,8 @@ class OneDimensionalCollaborative(IndependentModel):
         self.name = f"{self.name} ({self.population_count - 1} sites)"
 
 
+# Model to describe behavior of a single site
+
 class SingleSite(ConstantEventModel):
     def __init__(self):
         events = []
@@ -183,35 +190,46 @@ class SingleSite(ConstantEventModel):
         super().__init__(events)
 
 
-class MethylationBirthShift(Event):
-    def __init__(self, rate_parameter_name):
-        self.rate_parameter_name = rate_parameter_name
+# Model to describe behavior of a single lineage
 
-    def get_max_rate(self, state, parameters):
-        return parameters[self.rate_parameter_name]
-
+class BirthShift(TimeIndependentEvent):
+    def get_max_rate(self, state, model_parameters):
+        return model_parameters["b"]
+    
     def implement(self, state):
-        """Push the state to the side!"""
-        extra_u = 0
-        for _ in range(state[1]):
-            extra_u += math.floor(2 * random.random())
-        state[0] = state[0] + extra_u
-        state[1] = state[1] - extra_u + state[2]
-        state[2] = 0
+        u = state[0]
+        h = state[1]
+        m = state[2]
 
+        x = 0
+        for _ in range(h):
+            if random.random() > 0.5:
+                x += 1
+
+        state[0] = u + x
+        state[1] = m + h - x
+        state[2] = 0
+        return state
 
 class NoncollaborativeSingleCell(EventModel):
-    """The state space is (N_u, N_h, N_m) | N_u + N_h + N_m = M"""
+    """The state space is (N_u, N_h, N_m) | N_u + N_h + N_m = M.
+    This is a linear model where individuals are CpG sites."""
+
+
     name = "Single Cell Noncollaborative Model"
 
     def __init__(self):
         events = []
-        events.append(Switch(0, 1, "r_uh"))
-        events.append(Switch(1, 0, "r_hu"))
-        events.append(Switch(1, 2, "r_hm"))
-        events.append(Switch(2, 1, "r_mh"))
-        events.append(MethylationBirthShift("b"))
+        events.append(IndependentSwitch(0, 1, "r_uh"))
+        events.append(IndependentSwitch(1, 0, "r_hu"))
+        events.append(IndependentSwitch(1, 2, "r_hm"))
+        events.append(IndependentSwitch(2, 1, "r_mh"))
+        events.append(BirthShift("b"))
         super().__init__(events)
+
+
+# Model to describe branching process where cells have continuous type and deterministic
+# diffusion over their lifetimes.
 
 class BranchingDiffusion(Model):
     def __init__(self, r_b, r_d, diffusion):

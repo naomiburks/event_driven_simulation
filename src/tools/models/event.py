@@ -30,10 +30,12 @@ class Event:
         """Returns the new state after event is implemented.
         Mutates the state to become the new state."""
 
+
 class TimeIndependentEvent(Event):
-    """TimeIndependentEvents """
+    """Class for events whose rate does not depend on time."""
     def get_rate(self, state, time, model_parameters):
         return self.get_max_rate(state, model_parameters)
+
 
 class ConstantEvent(TimeIndependentEvent):
     """Constant events occur only when the model is in a certain state. 
@@ -86,7 +88,6 @@ class EventModel(Model):
         """
         Returns the result of running the model. Does not mutate any of the arguments.  
         """
-
         current_state = deepcopy(initial_state)
         current_time = 0
         num_steps = 0
@@ -102,8 +103,10 @@ class EventModel(Model):
             if total_rate == 0:
                 break
             else:
-                waiting_time = - np.log(random()) / total_rate
+                random_number = random()
+                waiting_time = - np.log(random_number) / total_rate
             current_time += waiting_time
+            
             if current_time > duration:
                 break
             event_index = random() * total_rate

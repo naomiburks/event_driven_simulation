@@ -1,6 +1,3 @@
-"""parameters are, in order: M, b, d0, dM, r_um, r_mu, p"""
-
-
 BASIC_PARAMS = {
     'b_0': 1.0,
     'b_M': 1.0, 
@@ -33,7 +30,6 @@ LIVING_DEATHRATE_PARAMS = {
     'p': 1,
   }
 
-
 LIVING_BIRTHRATE_PARAMS = {
     'b_0': 0.8,
     'b_M': 2.8, 
@@ -43,8 +39,6 @@ LIVING_BIRTHRATE_PARAMS = {
     'r_mu': 0.1, 
     'p': 1,
   }
-
-
 
 BIRTHRATE_PARAMS_COLL = {
     'b_0': 1.0,
@@ -66,7 +60,6 @@ BIRTHRATE_PARAMS_COLL = {
     'p': 1.0,
   }
 
-
 BARELY_LIVING_PARAMS = {
     'b_0': 1.8,
     'b_M': 1.8, 
@@ -76,6 +69,38 @@ BARELY_LIVING_PARAMS = {
     'r_mu': 0.036, 
     'M': 100,
     'p': 1,
+}
+
+BISTABLE_PDMP_PARAMS = {
+    'b': 1,
+    'r_uh': 0.35,
+    'r_hm': 0.5, 
+    'r_mh': 0.1,
+    'r_hu': 0.1, 
+    'r_uh_h': 5.5,
+    'r_uh_m': 11,
+    'r_hm_h': 10,
+    'r_hm_m': 20,
+    'r_mh_h': 5,
+    'r_mh_u': 10,
+    'r_hu_h': 5,
+    'r_hu_u': 10,
+}
+
+BISTABLE_STRONG_PDMP_PARAMS = {
+    'b': 1,
+    'r_uh': 1.4,
+    'r_hm': 2, 
+    'r_mh': 0.2,
+    'r_hu': 1.6, 
+    'r_uh_h': 22,
+    'r_uh_m': 44,
+    'r_hm_h': 40,
+    'r_hm_m': 80,
+    'r_mh_h': 20,
+    'r_mh_u': 40,
+    'r_hu_h': 20,
+    'r_hu_u': 40,
 }
 
 def UNMETHYLATED_INITIAL(M : int, cell_count = 100):

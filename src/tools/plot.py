@@ -25,13 +25,13 @@ def plot_timepoint_data(result):
 
 
     # plots graph
-    xs = list(result["data"].keys())
+    xs = list(result["data"][0].keys())
     xs.sort()
     site_count = len(result["data"][0]) - 1
     for i in range(site_count + 1):
         ys = []
         for x in xs:
-            ys.append(result["data"][x][i])
+            ys.append(result["data"][0][x][i])
         if "label" in result:
             label = result["label"][i]
         else:
@@ -125,6 +125,7 @@ def plot_dictionary_series(series_data, scale="linear"):
             ax.semilogy(xs, ys, label=name, linewidth=2)
     ax.legend()
     return fig, ax
+
 
 def show():
     plt.show()

@@ -1,5 +1,6 @@
 from src.tools.models.methylation import OneDimensionalNonCollaborative as OD, OneDimensionalCollaborative as OD_C
-from random import random, randint
+from random import random
+import random
 from src.constants import CONVERGENCE_TOLERANCE
 from copy import deepcopy
 
@@ -74,5 +75,74 @@ def test_model_coherence2():
     assert(coll_ext[0] > non_coll_ext[0])
     assert(coll_ext[-1] < non_coll_ext[-1])
 
+def test_collaborative_seed():
+    M = 10
+    base_params = {
+        'b_0': 0,
+        'b_M': 2, 
+        'd_0': 0.5,
+        'd_M': 0.5, 
+        'r_uh': 0.1,
+        'r_hm': 0.1, 
+        'r_mh': 0.1,
+        'r_hu': 0.1, 
+        'r_uh_h': 0.01,
+        'r_uh_m': 0.01,
+        'r_hm_h': 0.01,
+        'r_hm_m': 0.01,
+        'r_mh_h': 0.01,
+        'r_mh_u': 0.01,
+        'r_hu_h': 0.01,
+        'r_hu_u': 0.01,
+        'p': 1.0,
+    }
+    iniital_condition = [0] * (M + 1)
+    iniital_condition[-1] = 10
+    coll = OD_C(M)
+    random.seed(0)
+    result = coll.run(base_params, iniital_condition, 2)
+    result2 = coll.run(base_params, iniital_condition, 2)
+    random.seed(0)
+    result1 = coll.run(base_params, iniital_condition, 2)
+    print(result)
+    print(result2)
+    print(result1)
+    assert result == result1
+    assert result1 != result2
 
-test_model_coherence()
+
+def test_collaborative_seed2():
+    M = 10
+    base_params = {
+        'b_0': 0,
+        'b_M': 2, 
+        'd_0': 0.5,
+        'd_M': 0.5, 
+        'r_uh': 0.1,
+        'r_hm': 0.1, 
+        'r_mh': 0.1,
+        'r_hu': 0.1, 
+        'r_uh_h': 0.01,
+        'r_uh_m': 0.01,
+        'r_hm_h': 0.01,
+        'r_hm_m': 0.01,
+        'r_mh_h': 0.01,
+        'r_mh_u': 0.01,
+        'r_hu_h': 0.01,
+        'r_hu_u': 0.01,
+        'p': 1.0,
+    }
+    iniital_condition = [0] * (M + 1)
+    iniital_condition[-1] = 10
+    coll = OD_C(M)
+    random.seed(0)
+    result = coll.run(base_params, iniital_condition, 2)
+    result2 = coll.run(base_params, iniital_condition, 2)
+    random.seed(0)
+    result1 = coll.run(base_params, iniital_condition, 2)
+    print(result)
+    print(result2)
+    print(result1)
+    assert result == result1
+    assert result1 != result2
+

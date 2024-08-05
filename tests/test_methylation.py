@@ -45,7 +45,6 @@ def test_noncoll_methylation_2():
     event.implement(state)
     assert state == [1, 0, 1, 1, 0]
 
-
 def test_noncoll_demethylation_1():
     event = methylation.OneDimensionalNonCollaborativeDemethylation(4, 4)
     state = [1, 0, 2, 0, 1]

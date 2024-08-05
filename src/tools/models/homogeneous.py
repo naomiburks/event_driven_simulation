@@ -6,8 +6,7 @@ from src.constants import CONVERGENCE_TOLERANCE
 
 class IndependentEvent(TimeIndependentEvent):
     """
-    These events have rates varying linearly with population size as is common in
-    (multitype) branching processes.
+    An event with rate linearly dependent on population size.
     This class is abstract: an instantiation must say what implementing the event
     does to the state.
     """
@@ -33,7 +32,7 @@ class IndependentEvent(TimeIndependentEvent):
         return self.get_rate_from_parameters(model_parameters)
 
 
-class Birth(IndependentEvent):
+class IndependentBirth(IndependentEvent):
     """Most commonly birth event in a branching process."""
 
     def implement(self, state):
@@ -41,7 +40,7 @@ class Birth(IndependentEvent):
         return state
 
 
-class Death(IndependentEvent):
+class IndependentDeath(IndependentEvent):
     """Most commonly death event in a branching process."""
 
     def implement(self, state):
@@ -49,7 +48,7 @@ class Death(IndependentEvent):
         return state
 
 
-class Switch(IndependentEvent):
+class IndependentSwitch(IndependentEvent):
     """Most commonly a transition event in a multitype branching process."""
 
     def __init__(self, population_index: int, new_population_index: int, get_rate_from_parameters):
@@ -80,7 +79,7 @@ class IndependentModel(EventModel, PopulationModel):
         self.population_count = population_count
 
     def get_deterministic_model(self) -> ExponentialPopulationModel:
-        """Returns the deterministic version of the model"""
+        """Returns the the model which outputs the mean behavior"""
         model = ExponentialPopulationModel(
             self.population_count, self._calculate_generator)
         model.name = f"{self.name} (deterministic)"

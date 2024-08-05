@@ -1,11 +1,12 @@
 from scipy.linalg import expm, eig
 
 from src.tools.models.model import Model
+import matplotlib.pyplot as plt
 import numpy as np
 
 
 class PopulationModel(Model):
-    """In a population model, the state space is a list of population counts
+    """In a population model, the state is a list of population counts or fractions
     for populations of various types."""
 
     def __init__(self, num_of_populations: int):
@@ -32,10 +33,54 @@ class PopulationModel(Model):
         vector[index] = 1
         return vector
 
+    def plot_sample(self, result, labels):
+        fig, ax = plt.subplots()
+        timepoint_series = result["data"][0]
+        xs = list(timepoint_series.keys())
+        population_count = len(timepoint_series[xs[0]])
+        ys_list = [[timepoint_series[x][pop] for x in xs] for pop in range(population_count)]
+        for ys in ys_list:
+            ax.plot(xs, ys, linewidth = 1, alpha = 1)
+        leg = ax.legend(labels)
+        for line in leg.get_lines():
+            line.set_linewidth(4)
+        return fig, ax
 
+    def plot_stacked(self, result, labels):
+        fig, ax = plt.subplots()
+        timepoint_series = result["data"][0]
+        xs = list(timepoint_series.keys())
+        population_count = len(timepoint_series[xs[0]])
+        ys_list = [[sum([timepoint_series[x][smaller_pop] for smaller_pop in range(pop + 1)]) for x in xs] for pop in range(population_count)]
+        for i, ys in enumerate(ys_list):
+            if i == 0:
+                ax.fill_between(xs, ys, facecolor="gyr"[i])
+            else:
+                ax.fill_between(xs, ys, ys_list[i-1], facecolor="gyr"[i])
+        leg = ax.legend(labels)
+        for line in leg.get_lines():
+            line.set_linewidth(4)
+        return fig, ax
+
+    def plot_triangle(self, result, labels):
+        fig, ax = plt.subplots()
+        timepoint_series = result["data"][0]
+        times = list(timepoint_series.keys())
+        xs = [timepoint_series[t][0] for t in times]
+        ys = [timepoint_series[t][2] for t in times]
+        print(labels)
+        input()
+        print(xs)
+        input()
+        print(ys)
+        ax.plot(xs, ys)
+        ax.set_xlabel(labels[0])
+        ax.set_ylabel(labels[2])
+        return fig, ax
+    
 class ExponentialPopulationModel(PopulationModel):
     """
-    This model is used to run deterministic model where populations grow in accordance
+    This model is used to simulate populations growing in accordance
     with the exponential of an instananeous generator matrix M.
 
     The the entry M[i][j] is the rate at which a type-i individual generates type-j individuals.
@@ -65,5 +110,3 @@ class ExponentialPopulationModel(PopulationModel):
 
     def _get_instantaneous_transition_matrix(self, parameters):
         return self.get_generator_from_parameters(parameters)
-
-
